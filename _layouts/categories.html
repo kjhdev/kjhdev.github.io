@@ -1,0 +1,15 @@
+---
+layout: page
+---
+
+{% for category in site.categories %}
+{% capture category_name %}{{ category | first }}{% endcapture %}
+<h2 class="mt-0 h4">{{ category_name }}</h2>
+{% for post in site.categories[category_name] %}
+<ul>
+    <li>
+        <a href="{{ site.baseurl }}{{ post.url }}">{{post.title}}</a>
+    </li>
+</ul>
+{% endfor %}
+{% endfor %}
