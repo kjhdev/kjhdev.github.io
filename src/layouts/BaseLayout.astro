@@ -6,6 +6,8 @@ interface Props {
   description?: string;
   lang?: 'ko' | 'en';
   type?: 'website' | 'article';
+  koUrl?: string;
+  enUrl?: string;
 }
 
 const {
@@ -13,29 +15,14 @@ const {
   description = 'KJH Dev Blog',
   lang = 'ko',
   type = 'website',
+  koUrl,
+  enUrl,
 } = Astro.props;
 
 const homeUrl = lang === 'ko' ? '/ko/' : '/en/';
 
 const site = Astro.site ?? new URL('https://kjhdev.github.io');
-
-const canonicalURL = new URL(
-  Astro.url.pathname,
-  site
-);
-
-const koPath =
-  lang === 'ko'
-    ? Astro.url.pathname
-    : Astro.url.pathname.replace(/^\/en(?=\/|$)/, '/ko');
-
-const enPath =
-  lang === 'en'
-    ? Astro.url.pathname
-    : Astro.url.pathname.replace(/^\/ko(?=\/|$)/, '/en');
-
-const koURL = new URL(koPath, site);
-const enURL = new URL(enPath, site);
+const canonicalURL = new URL(Astro.url.pathname, site);
 ---
 
 <!doctype html>
@@ -47,82 +34,49 @@ const enURL = new URL(enPath, site);
     <link rel="icon" type="image/png" href="/gg.png" />
 
     <title>{title}</title>
-
-    <meta
-      name="description"
-      content={description}
-    />
+    <meta name="description" content={description} />
 
     <!-- Canonical -->
-    <link
-      rel="canonical"
-      href={canonicalURL}
-    />
+    <link rel="canonical" href={canonicalURL} />
 
-    <!-- 한글 / 영어 페이지 연결 -->
-    <link
-      rel="alternate"
-      hreflang="ko"
-      href={koURL}
-    />
+    <!-- hreflang: 실제 존재하는 번역 페이지가 전달된 경우에만 출력 -->
+    {
+      koUrl && (
+        <link
+          rel="alternate"
+          hreflang="ko"
+          href={new URL(koUrl, site)}
+        />
+      )
+    }
 
-    <link
-      rel="alternate"
-      hreflang="en"
-      href={enURL}
-    />
+    {
+      enUrl && (
+        <link
+          rel="alternate"
+          hreflang="en"
+          href={new URL(enUrl, site)}
+        />
+      )
+    }
 
     <!-- Open Graph -->
-    <meta
-      property="og:title"
-      content={title}
-    />
-
-    <meta
-      property="og:description"
-      content={description}
-    />
-
-    <meta
-      property="og:type"
-      content={type}
-    />
-
-    <meta
-      property="og:url"
-      content={canonicalURL}
-    />
-
-    <meta
-      property="og:site_name"
-      content="KJH Dev"
-    />
-
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="KJH Dev" />
     <meta
       property="og:locale"
       content={lang === 'ko' ? 'ko_KR' : 'en_US'}
     />
 
     <!-- Twitter / X -->
-    <meta
-      name="twitter:card"
-      content="summary"
-    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
 
-    <meta
-      name="twitter:title"
-      content={title}
-    />
-
-    <meta
-      name="twitter:description"
-      content={description}
-    />
-
-    <link
-      rel="sitemap"
-      href="/sitemap-index.xml"
-    />
+    <link rel="sitemap" href="/sitemap-index.xml" />
   </head>
 
   <body>

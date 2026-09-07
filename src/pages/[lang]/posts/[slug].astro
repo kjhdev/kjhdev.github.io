@@ -27,7 +27,30 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 
-const lang = post.data.lang;
+const lang = post.data.lang as 'ko' | 'en';
+const slug = post.id.split('/').pop()!;
+
+/*
+ * 같은 slug를 가진 실제 번역 글을 확인한다.
+ * 존재하는 언어 페이지만 BaseLayout에 전달하므로,
+ * 404 페이지를 hreflang으로 연결하지 않는다.
+ */
+const allPosts = await getCollection(
+  'blog',
+  ({ data }) => !data.draft
+);
+
+const koPost = allPosts.find(
+  (item) =>
+    item.data.lang === 'ko' &&
+    item.id.split('/').pop() === slug
+);
+
+const enPost = allPosts.find(
+  (item) =>
+    item.data.lang === 'en' &&
+    item.id.split('/').pop() === slug
+);
 
 const formattedDate = post.data.pubDate.toLocaleDateString(
   lang === 'ko' ? 'ko-KR' : 'en-US',
@@ -44,6 +67,8 @@ const formattedDate = post.data.pubDate.toLocaleDateString(
   description={post.data.description}
   lang={lang}
   type="article"
+  koUrl={koPost ? `/ko/posts/${slug}/` : undefined}
+  enUrl={enPost ? `/en/posts/${slug}/` : undefined}
 >
   <article class="article">
     <header class="article-header">
