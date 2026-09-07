@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { categoryToSlug } from '../../../utils/category';
 
 export async function getStaticPaths() {
   const posts = await getCollection(
@@ -45,13 +46,15 @@ const formattedDate = post.data.pubDate.toLocaleDateString(
   type="article"
 >
   <article class="article">
-
     <header class="article-header">
       {
         post.data.category && (
-          <div class="article-category">
+          <a
+            class="article-category"
+            href={`/${lang}/categories/${categoryToSlug(post.data.category)}/`}
+          >
             {post.data.category}
-          </div>
+          </a>
         )
       }
 
@@ -81,6 +84,5 @@ const formattedDate = post.data.pubDate.toLocaleDateString(
     <div class="article-body">
       <Content />
     </div>
-
   </article>
 </BaseLayout>

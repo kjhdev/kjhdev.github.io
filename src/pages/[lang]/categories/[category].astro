@@ -1,0 +1,128 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { categoryToSlug } from '../../../utils/category';
+
+export async function getStaticPaths() {
+  const posts = await getCollection(
+    'blog',
+    ({ data }) => !data.draft && !!data.category
+  );
+
+  // 언어 + category 조합별로 한 번만 페이지를 생성한다.
+  const categoryMap = new Map<
+    string,
+    {
+      lang: 'ko' | 'en';
+      categoryName: string;
+    }
+  >();
+
+  for (const post of posts) {
+    const categoryName = post.data.category;
+    if (!categoryName) continue;
+
+    const lang = post.data.lang;
+    const categorySlug = categoryToSlug(categoryName);
+    const key = `${lang}:${categorySlug}`;
+
+    categoryMap.set(key, {
+      lang,
+      categoryName,
+    });
+  }
+
+  return Array.from(categoryMap.values()).map(
+    ({ lang, categoryName }) => ({
+      params: {
+        lang,
+        category: categoryToSlug(categoryName),
+      },
+      props: {
+        lang,
+        categoryName,
+      },
+    })
+  );
+}
+
+const {
+  lang,
+  categoryName,
+} = Astro.props as {
+  lang: 'ko' | 'en';
+  categoryName: string;
+};
+
+const posts = (await getCollection('blog'))
+  .filter(
+    (post) =>
+      post.data.lang === lang &&
+      !post.data.draft &&
+      post.data.category === categoryName
+  )
+  .sort(
+    (a, b) =>
+      b.data.pubDate.getTime() -
+      a.data.pubDate.getTime()
+  );
+---
+
+<BaseLayout
+  title={`${categoryName} | KJH Dev`}
+  description={
+    lang === 'ko'
+      ? `${categoryName} 카테고리의 개발 글입니다.`
+      : `Development posts in the ${categoryName} category.`
+  }
+  lang={lang}
+>
+  <section>
+    <div class="category-page-header">
+      <a
+        class="back-link"
+        href={`/${lang}/categories/`}
+      >
+        ← {lang === 'ko' ? '카테고리' : 'Categories'}
+      </a>
+
+      <h1>{categoryName}</h1>
+
+      <p>
+        {posts.length}
+        {lang === 'ko' ? '개의 글' : ' posts'}
+      </p>
+    </div>
+
+    <div class="post-list">
+      {
+        posts.map((post) => {
+          const slug = post.id.split('/').pop();
+
+          return (
+            <a
+              class="post-card"
+              href={`/${lang}/posts/${slug}/`}
+            >
+              <h2 class="post-title">
+                {post.data.title}
+              </h2>
+
+              <p class="post-description">
+                {post.data.description}
+              </p>
+
+              <div class="post-meta">
+                {
+                  post.data.pubDate.toLocaleDateString(
+                    lang === 'ko' ? 'ko-KR' : 'en-US'
+                  )
+                }
+              </div>
+            </a>
+          );
+        })
+      }
+    </div>
+  </section>
+</BaseLayout>

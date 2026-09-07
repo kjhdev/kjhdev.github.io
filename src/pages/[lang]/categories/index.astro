@@ -1,0 +1,91 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { categoryToSlug } from '../../../utils/category';
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: 'ko' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+
+if (lang !== 'ko' && lang !== 'en') {
+  throw new Error('Invalid language');
+}
+
+const posts = (await getCollection('blog'))
+  .filter(
+    (post) =>
+      post.data.lang === lang &&
+      !post.data.draft &&
+      post.data.category
+  );
+
+// 실제 게시글에 사용된 category만 모아서 개수를 계산한다.
+const categoryMap = new Map<string, number>();
+
+for (const post of posts) {
+  const category = post.data.category;
+  if (!category) continue;
+
+  categoryMap.set(
+    category,
+    (categoryMap.get(category) ?? 0) + 1
+  );
+}
+
+const categories = Array.from(categoryMap.entries())
+  .map(([name, count]) => ({
+    name,
+    count,
+    slug: categoryToSlug(name),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<BaseLayout
+  title={lang === 'ko' ? '카테고리 | KJH Dev' : 'Categories | KJH Dev'}
+  description={
+    lang === 'ko'
+      ? '카테고리별 개발 글을 확인할 수 있습니다.'
+      : 'Browse development posts by category.'
+  }
+  lang={lang}
+>
+  <section>
+    <h1 class="page-title">
+      {lang === 'ko' ? '카테고리' : 'Categories'}
+    </h1>
+
+    {
+      categories.length === 0 ? (
+        <p>
+          {lang === 'ko'
+            ? '아직 등록된 카테고리가 없습니다.'
+            : 'No categories yet.'}
+        </p>
+      ) : (
+        <div class="category-list">
+          {
+            categories.map((category) => (
+              <a
+                class="category-card"
+                href={`/${lang}/categories/${category.slug}/`}
+              >
+                <strong>{category.name}</strong>
+
+                <span>
+                  {category.count}
+                  {lang === 'ko' ? '개의 글' : ' posts'}
+                </span>
+              </a>
+            ))
+          }
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>
