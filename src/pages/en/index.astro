@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('blog'))
+  .filter((post) => post.data.lang === 'en' && !post.data.draft)
+  .sort(
+    (a, b) =>
+      b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  );
+---
+
+<BaseLayout
+  title="KJH Dev"
+  description="A development blog about programming, troubleshooting, and software development."
+  lang="en"
+>
+  <section class="hero">
+    <h1>KJH Dev</h1>
+
+    <p>
+      Development experiences, technical notes, and solutions
+      learned while building software.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="section-title">Recent Posts</h2>
+
+    {
+      posts.length === 0 ? (
+        <p>No posts yet.</p>
+      ) : (
+        <div class="post-list">
+          {
+            posts.map((post) => {
+              const slug = post.id.split('/').pop();
+
+              return (
+                <a
+                  class="post-card"
+                  href={`/en/posts/${slug}/`}
+                >
+                  <h3 class="post-title">
+                    {post.data.title}
+                  </h3>
+
+                  <p class="post-description">
+                    {post.data.description}
+                  </p>
+
+                  <div class="post-meta">
+                    {post.data.pubDate.toLocaleDateString('en-US')}
+                    {
+                      post.data.category &&
+                      ` · ${post.data.category}`
+                    }
+                  </div>
+                </a>
+              );
+            })
+          }
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

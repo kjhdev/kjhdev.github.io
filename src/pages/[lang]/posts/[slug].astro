@@ -1,0 +1,86 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection(
+    'blog',
+    ({ data }) => !data.draft
+  );
+
+  return posts.map((post) => {
+    const slug = post.id.split('/').pop();
+
+    return {
+      params: {
+        lang: post.data.lang,
+        slug,
+      },
+      props: {
+        post,
+      },
+    };
+  });
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const lang = post.data.lang;
+
+const formattedDate = post.data.pubDate.toLocaleDateString(
+  lang === 'ko' ? 'ko-KR' : 'en-US',
+  {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }
+);
+---
+
+<BaseLayout
+  title={`${post.data.title} | KJH Dev`}
+  description={post.data.description}
+  lang={lang}
+  type="article"
+>
+  <article class="article">
+
+    <header class="article-header">
+      {
+        post.data.category && (
+          <div class="article-category">
+            {post.data.category}
+          </div>
+        )
+      }
+
+      <h1 class="article-title">
+        {post.data.title}
+      </h1>
+
+      <div class="article-date">
+        {formattedDate}
+      </div>
+
+      {
+        post.data.tags.length > 0 && (
+          <div class="article-tags">
+            {
+              post.data.tags.map((tag) => (
+                <span class="article-tag">
+                  #{tag}
+                </span>
+              ))
+            }
+          </div>
+        )
+      }
+    </header>
+
+    <div class="article-body">
+      <Content />
+    </div>
+
+  </article>
+</BaseLayout>

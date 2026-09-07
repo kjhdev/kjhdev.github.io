@@ -1,0 +1,65 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('blog'))
+  .filter((post) => post.data.lang === 'ko' && !post.data.draft)
+  .sort(
+    (a, b) =>
+      b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  );
+---
+
+<BaseLayout
+  title="KJH Dev"
+  description="개발 경험과 기술을 기록하는 개발 블로그입니다."
+  lang="ko"
+>
+  <section class="hero">
+    <h1>KJH Dev</h1>
+    <p>
+      개발하면서 경험한 내용과 문제 해결 과정을 기록합니다.
+    </p>
+  </section>
+
+  <section>
+    <h2 class="section-title">최근 글</h2>
+
+    {
+      posts.length === 0 ? (
+        <p>아직 등록된 글이 없습니다.</p>
+      ) : (
+        <div class="post-list">
+          {
+            posts.map((post) => {
+              const slug = post.id.split('/').pop();
+
+              return (
+                <a
+                  class="post-card"
+                  href={`/ko/posts/${slug}/`}
+                >
+                  <h3 class="post-title">
+                    {post.data.title}
+                  </h3>
+
+                  <p class="post-description">
+                    {post.data.description}
+                  </p>
+
+                  <div class="post-meta">
+                    {post.data.pubDate.toLocaleDateString('ko-KR')}
+                    {
+                      post.data.category &&
+                      ` · ${post.data.category}`
+                    }
+                  </div>
+                </a>
+              );
+            })
+          }
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>
