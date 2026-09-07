@@ -8,6 +8,7 @@ interface Props {
   type?: 'website' | 'article';
   koUrl?: string;
   enUrl?: string;
+  image?: string;
 }
 
 const {
@@ -17,12 +18,14 @@ const {
   type = 'website',
   koUrl,
   enUrl,
+  image = '/images/og-default.png',
 } = Astro.props;
 
 const homeUrl = lang === 'ko' ? '/ko/' : '/en/';
 
 const site = Astro.site ?? new URL('https://kjhdev.github.io');
 const canonicalURL = new URL(Astro.url.pathname, site);
+const imageURL = new URL(image, site);
 ---
 
 <!doctype html>
@@ -32,6 +35,10 @@ const canonicalURL = new URL(Astro.url.pathname, site);
     <meta name="viewport" content="width=device-width" />
 
     <link rel="icon" type="image/png" href="/gg.png" />
+
+    <meta property="og:image" content="https://kjhdev.github.io/images/og-default.png"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:image" content="https://kjhdev.github.io/images/og-default.png"/>
 
     <title>{title}</title>
     <meta name="description" content={description} />
