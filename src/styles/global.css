@@ -303,3 +303,10 @@ a:hover {
     font-size: 23px;
   }
 }
+.article-body img[src$="parcel_tracker.png"] {
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  margin: 28px auto;
+}

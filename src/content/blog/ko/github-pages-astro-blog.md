@@ -2,7 +2,7 @@
 title: "GitHub Pages + Astro로 무료 개발 블로그 만들기"
 description: "GitHub Pages와 Astro를 이용해 별도 호스팅 비용 없이 개발 블로그를 만들고 배포하는 과정을 정리합니다."
 lang: "ko"
-pubDate: 2026-09-07
+pubDate: 2026-09-07T14:30:00+09:00
 category: "Web Development"
 tags:
   - Astro

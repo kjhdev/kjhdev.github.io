@@ -2,7 +2,7 @@
 title: "KJH Dev 블로그를 시작합니다"
 description: "GitHub Pages와 Astro를 이용해 개발 블로그를 만드는 과정을 기록합니다."
 lang: "ko"
-pubDate: 2026-09-07
+pubDate: 2026-09-07T13:00:00+09:00
 category: "Blog"
 tags:
   - Astro

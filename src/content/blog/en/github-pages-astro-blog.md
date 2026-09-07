@@ -2,7 +2,7 @@
 title: "Build a Free Developer Blog with GitHub Pages and Astro"
 description: "A practical guide to building and deploying a developer blog for free using Astro, GitHub Pages, and GitHub Actions."
 lang: "en"
-pubDate: 2026-09-07
+pubDate: 2026-09-07T14:30:00+09:00
 category: "Web Development"
 tags:
   - Astro

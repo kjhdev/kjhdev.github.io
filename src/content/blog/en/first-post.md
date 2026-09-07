@@ -2,7 +2,7 @@
 title: "Starting the KJH Dev Blog"
 description: "A development blog documenting real-world development experiences, technical issues, and solutions."
 lang: "en"
-pubDate: 2026-09-07
+pubDate: 2026-09-07T13:00:00+09:00
 category: "Blog"
 tags:
   - Astro
