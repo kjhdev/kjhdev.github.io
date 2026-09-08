@@ -36,10 +36,10 @@ GitHub Pages는 정적 웹사이트를 무료로 호스팅할 수 있기 때문�
 
 ## 1. GitHub Pages 저장소 만들기
 
-GitHub 계정명이 `kjhdev`라면 저장소 이름을 다음과 같이 만든다.
+GitHub 계정명이 `username`라면 저장소 이름을 다음과 같이 만든다.
 
 ```text
-kjhdev.github.io
+username.github.io
 ```
 
 사용자 페이지용 저장소는 반드시 다음 규칙을 따른다.
@@ -51,8 +51,8 @@ GitHub계정명.github.io
 저장소를 만든 후 로컬로 내려받는다.
 
 ```bash
-git clone https://github.com/kjhdev/kjhdev.github.io.git
-cd kjhdev.github.io
+git clone https://github.com/username/username.github.io.git
+cd username.github.io
 ```
 
 이 저장소에 Astro 프로젝트를 구성하고 나중에 GitHub Actions를 통해 빌드 결과물을 배포한다.
@@ -188,11 +188,11 @@ draft: false
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://kjhdev.github.io',
+  site: 'https://username.github.io',
 });
 ```
 
-사용자 대표 GitHub Pages 저장소인 `kjhdev.github.io`를 사용하는 경우 별도의 `base` 경로는 필요하지 않다.
+사용자 대표 GitHub Pages 저장소인 `username.github.io`를 사용하는 경우 별도의 `base` 경로는 필요하지 않다.
 
 일반 프로젝트 저장소를 GitHub Pages로 배포한다면 저장소 이름에 따라 `base` 설정이 추가로 필요할 수 있다.
 
@@ -288,7 +288,7 @@ GitHub Pages deploy
 Actions 메뉴에서 `build`와 `deploy` 작업이 모두 성공하면 실제 주소로 접속한다.
 
 ```text
-https://kjhdev.github.io
+https://username.github.io
 ```
 
 ## 9. 이후 글을 올리는 방법
@@ -308,8 +308,8 @@ GitHub Actions가 다시 실행되고 변경된 블로그가 자동으로 배포
 다른 PC에서 작업할 때도 저장소를 clone하고 `npm install`만 실행하면 동일한 환경에서 작업할 수 있다.
 
 ```bash
-git clone https://github.com/kjhdev/kjhdev.github.io.git
-cd kjhdev.github.io
+git clone https://github.com/username/username.github.io.git
+cd username.github.io
 npm install
 npm run dev
 ```

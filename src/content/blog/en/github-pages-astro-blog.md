@@ -38,10 +38,10 @@ GitHub Pages is a good fit for personal blogs and technical documentation becaus
 
 ## 1. Create a GitHub Pages Repository
 
-If your GitHub username is `kjhdev`, create a repository with the following name:
+If your GitHub username is `username`, create a repository with the following name:
 
 ```text
-kjhdev.github.io
+username.github.io
 ```
 
 A user-level GitHub Pages repository follows this naming rule:
@@ -53,8 +53,8 @@ GitHubUsername.github.io
 After creating the repository, clone it to your local machine.
 
 ```bash
-git clone https://github.com/kjhdev/kjhdev.github.io.git
-cd kjhdev.github.io
+git clone https://github.com/username/username.github.io.git
+cd username.github.io
 ```
 
 This repository will contain the Astro project, and the generated site will later be deployed through GitHub Actions.
@@ -192,11 +192,11 @@ Set the production site URL in `astro.config.mjs`.
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://kjhdev.github.io',
+  site: 'https://username.github.io',
 });
 ```
 
-If you use the user-level repository `kjhdev.github.io`, you do not need a separate `base` path.
+If you use the user-level repository `username.github.io`, you do not need a separate `base` path.
 
 If you deploy a normal project repository instead, you may need to configure `base` using the repository name.
 
@@ -294,7 +294,7 @@ GitHub Pages deploy
 Once both the `build` and `deploy` jobs complete successfully, open:
 
 ```text
-https://kjhdev.github.io
+https://username.github.io
 ```
 
 The site should now be live.
@@ -316,8 +316,8 @@ GitHub Actions rebuilds and redeploys the site automatically.
 You can also work from another computer by cloning the repository and installing the dependencies.
 
 ```bash
-git clone https://github.com/kjhdev/kjhdev.github.io.git
-cd kjhdev.github.io
+git clone https://github.com/username/username.github.io.git
+cd username.github.io
 npm install
 npm run dev
 ```
