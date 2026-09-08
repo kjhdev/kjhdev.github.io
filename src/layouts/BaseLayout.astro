@@ -32,74 +32,52 @@ const imageURL = new URL(image, site);
 <!doctype html>
 <html lang={lang}>
   <head>
+    <!-- 기본 메타 -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="google-site-verification" content="bolJzl6qQmXbFkaP1RzWqIlA5pugOw9Jj0N4h8_ROtY" />
-    <GoogleAnalytics />
-
-    <link rel="icon" type="image/png" href="/gg.png" />
-
-    <meta property="og:image" content="https://kjhdev.github.io/images/og-default.png"/>
-    <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:image" content="https://kjhdev.github.io/images/og-default.png"/>
 
     <title>{title}</title>
     <meta name="description" content={description} />
 
+    <!-- Google Analytics -->
+    <GoogleAnalytics />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/gg.png" />
+
     <!-- Canonical -->
     <link rel="canonical" href={canonicalURL} />
 
-    <!-- hreflang: 실제 존재하는 번역 페이지가 전달된 경우에만 출력 -->
-    {
-      koUrl && (
-        <link
-          rel="alternate"
-          hreflang="ko"
-          href={new URL(koUrl, site)}
-        />
-      )
-    }
-
-    {
-      enUrl && (
-        <link
-          rel="alternate"
-          hreflang="en"
-          href={new URL(enUrl, site)}
-        />
-      )
-    }
+    <!-- hreflang -->
+    {koUrl && <link rel="alternate" hreflang="ko" href={new URL(koUrl, site)} />}
+    {enUrl && <link rel="alternate" hreflang="en" href={new URL(enUrl, site)} />}
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={type} />
     <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={imageURL} />
     <meta property="og:site_name" content="KJH Dev" />
-    <meta
-      property="og:locale"
-      content={lang === 'ko' ? 'ko_KR' : 'en_US'}
-    />
+    <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
 
     <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
 
+    <!-- Sitemap -->
     <link rel="sitemap" href="/sitemap-index.xml" />
   </head>
 
   <body>
     <header class="site-header">
       <div class="header-inner">
-        <a class="site-title" href={homeUrl}>
-          KJH Dev
-        </a>
+        <a class="site-title" href={homeUrl}>KJH Dev</a>
 
         <nav class="site-nav">
-          <a href={homeUrl}>
-            {lang === 'ko' ? '홈' : 'Home'}
-          </a>
-
+          <a href={homeUrl}>{lang === 'ko' ? '홈' : 'Home'}</a>
           <a href={`/${lang}/categories/`}>
             {lang === 'ko' ? '카테고리' : 'Categories'}
           </a>
@@ -112,9 +90,7 @@ const imageURL = new URL(image, site);
     </main>
 
     <footer class="site-footer">
-      <div class="footer-inner">
-        © 2026 KJH Dev
-      </div>
+      <div class="footer-inner">© 2026 KJH Dev</div>
     </footer>
   </body>
 </html>

@@ -1,67 +1,37 @@
 ---
 const siteUrl = 'https://kjhdev.github.io';
 const imageUrl = `${siteUrl}/images/og-default.png`;
+const description = '개발 경험과 문제 해결 과정을 기록하는 개발 블로그입니다.';
 ---
 
 <!doctype html>
 <html lang="ko">
   <head>
+    <!-- 기본 메타 -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="google-site-verification" content="bolJzl6qQmXbFkaP1RzWqIlA5pugOw9Jj0N4h8_ROtY" />
-
-    <!-- 검색 결과에서는 루트 페이지 제외 -->
     <meta name="robots" content="noindex, follow" />
 
     <title>KJH Dev</title>
-
-    <meta
-      name="description"
-      content="개발 경험과 문제 해결 과정을 기록하는 개발 블로그입니다."
-    />
+    <meta name="description" content={description} />
 
     <!-- Open Graph -->
     <meta property="og:title" content="KJH Dev" />
-    <meta
-      property="og:description"
-      content="개발 경험과 문제 해결 과정을 기록하는 개발 블로그입니다."
-    />
-
+    <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={siteUrl} />
     <meta property="og:site_name" content="KJH Dev" />
-
-    <meta
-      property="og:image"
-      content={imageUrl}
-    />
-
-    <meta
-      property="og:image:type"
-      content="image/png"
-    />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:type" content="image/png" />
 
     <!-- Twitter / X -->
-    <meta
-      name="twitter:card"
-      content="summary_large_image"
-    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="KJH Dev" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
 
-    <meta
-      name="twitter:title"
-      content="KJH Dev"
-    />
-
-    <meta
-      name="twitter:description"
-      content="개발 경험과 문제 해결 과정을 기록하는 개발 블로그입니다."
-    />
-
-    <meta
-      name="twitter:image"
-      content={imageUrl}
-    />
-
+    <!-- 언어별 홈으로 이동 -->
     <script is:inline>
       const language = navigator.language.toLowerCase();
 
