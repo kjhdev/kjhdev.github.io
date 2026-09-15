@@ -27,6 +27,7 @@ const homeUrl = lang === 'ko' ? '/ko/' : '/en/';
 const site = Astro.site ?? new URL('https://kjhdev.github.io');
 const canonicalURL = new URL(Astro.url.pathname, site);
 const imageURL = new URL(image, site);
+const rssURL = new URL(`/${lang}/rss.xml`, site);
 ---
 
 <!doctype html>
@@ -66,6 +67,16 @@ const imageURL = new URL(image, site);
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
+
+    <!-- Sitemap -->
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <!-- RSS -->
+    <link
+        rel="alternate"
+        type="application/rss+xml"
+        title={lang === 'ko' ? 'KJH Dev 한국어 RSS' : 'KJH Dev English RSS'}
+        href={rssURL}
+    />
 
     <!-- Sitemap -->
     <link rel="sitemap" href="/sitemap-index.xml" />

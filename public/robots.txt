@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 
 Sitemap: https://kjhdev.github.io/sitemap-index.xml
+Sitemap: https://kjhdev.github.io/ko/rss.xml
+Sitemap: https://kjhdev.github.io/en/rss.xml
