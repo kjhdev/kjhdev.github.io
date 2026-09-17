@@ -15,7 +15,11 @@
 
 html,
 body {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 html {
@@ -32,6 +36,8 @@ html {
 
 body {
   margin: 0;
+  width: 100vw;
+  min-width: 100vw;
   min-height: 100vh;
 
   display: flex;
@@ -56,12 +62,17 @@ a:hover {
   top: 0;
   z-index: 1000;
 
+  width: 100%;
+  min-width: 0;
+
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 
 .header-inner {
+  width: 100%;
   max-width: var(--content-width);
+  min-width: 0;
   margin: 0 auto;
   padding: 20px 24px;
 }
@@ -74,6 +85,7 @@ a:hover {
 .main-container {
   width: 100%;
   max-width: var(--content-width);
+  min-width: 0;
   margin: 0 auto;
   padding: 48px 24px 80px;
   flex: 1;
@@ -140,13 +152,17 @@ a:hover {
 }
 
 .site-footer {
+  width: 100%;
+  min-width: 0;
   margin-top: auto;
   border-top: 1px solid var(--border);
   background: var(--surface);
 }
 
 .footer-inner {
+  width: 100%;
   max-width: var(--content-width);
+  min-width: 0;
   margin: 0 auto;
   padding: 24px;
   color: var(--subtext);
@@ -154,6 +170,8 @@ a:hover {
 }
 
 .article {
+  width: 100%;
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -220,7 +238,10 @@ a:hover {
 }
 
 .article-body {
+  min-width: 0;
   font-size: 17px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .article-body h2 {
@@ -258,6 +279,8 @@ a:hover {
 }
 
 .article-body pre {
+  width: 100%;
+  max-width: 100%;
   margin: 24px 0;
   overflow-x: auto;
 }
