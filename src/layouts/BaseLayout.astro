@@ -43,8 +43,13 @@ const rssURL = new URL(`/${lang}/rss.xml`, site);
     <!-- Google Analytics -->
     <GoogleAnalytics />
 
-    <!-- Favicon -->
+    <!-- App Icons -->
     <link rel="icon" type="image/png" href="/gg.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#fcfaf1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="KJH Dev" />
 
     <!-- Canonical -->
     <link rel="canonical" href={canonicalURL} />
@@ -68,8 +73,6 @@ const rssURL = new URL(`/${lang}/rss.xml`, site);
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
 
-    <!-- Sitemap -->
-    <link rel="sitemap" href="/sitemap-index.xml" />
     <!-- RSS -->
     <link
         rel="alternate"
