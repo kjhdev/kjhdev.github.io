@@ -1,19 +1,19 @@
 ---
-title: "Flutter macOS Release 빌드 오류 해결하기"
+title: "Fix Flutter macOS Release Build Errors"
 pubDate: "2026-09-20T10:24:37+09:00"
-description: "기존 Flutter 프로젝트에 macOS 지원을 추가하고 flutter build macos --release 과정에서 발생하는 대표적인 문제를 점검하는 방법을 정리합니다."
+description: "A practical checklist for adding macOS support to an existing Flutter project and troubleshooting common issues during flutter build macos --release."
 category: "Flutter"
 tags: ["Flutter", "macOS", "Release", "Desktop", "Build"]
-lang: "ko"
+lang: "en"
 ---
 
-Flutter로 Windows 데스크톱 앱을 개발하다가 macOS까지 지원하려면 단순히 `flutter build macos --release`만 실행해서 끝나지 않는 경우가 있습니다.
+When a Flutter desktop app that was originally developed for Windows needs to support macOS as well, simply running `flutter build macos --release` may not be enough.
 
-특히 기존 프로젝트가 Windows 중심으로 개발되었거나 나중에 macOS 플랫폼을 추가했다면 프로젝트 설정, 플러그인, 네이티브 의존성, 외부 실행파일 때문에 빌드 오류가 발생할 수 있습니다.
+This is especially true for projects that were built around Windows first and added macOS later. Build failures can come from project settings, plugins, native dependencies, or external executables.
 
-## macOS 플랫폼부터 확인하기
+## Check the macOS platform first
 
-프로젝트에 `macos/` 디렉터리가 있는지 확인합니다.
+Confirm that the project contains a `macos/` directory.
 
 ```text
 project/
@@ -23,34 +23,34 @@ project/
 └── pubspec.yaml
 ```
 
-없다면 기존 프로젝트에 macOS 플랫폼을 추가할 수 있습니다.
+If it is missing, add macOS support to the existing project.
 
 ```bash
 flutter create --platforms=macos .
 ```
 
-Windows와 macOS를 함께 추가하려면 다음과 같이 실행합니다.
+To add both Windows and macOS support, run:
 
 ```bash
 flutter create --platforms=windows,macos .
 ```
 
-이미 수정된 `macos` 디렉터리가 있다면 재생성하기 전에 기존 네이티브 설정을 확인하는 것이 안전합니다.
+If the `macos` directory already contains custom native settings, review them before regenerating the platform files.
 
-## Flutter와 Xcode 환경 확인
+## Check Flutter and Xcode
 
-먼저 개발 환경을 확인합니다.
+Start by checking the development environment.
 
 ```bash
 flutter doctor -v
 flutter --version
 ```
 
-macOS 빌드에는 Flutter SDK뿐 아니라 정상적인 Xcode 환경이 필요합니다. 여러 Mac에서 프로젝트를 공유한다면 Flutter 버전 차이도 확인합니다.
+Building for macOS requires not only the Flutter SDK but also a working Xcode environment. If the same project is shared across multiple Macs, verify that their Flutter versions are compatible as well.
 
-## 의존성과 빌드 캐시 정리
+## Clean dependencies and build cache
 
-플랫폼을 추가했거나 다른 PC에서 프로젝트를 처음 받은 경우 다음 순서로 정리합니다.
+After adding a platform or cloning the project onto another computer, run the following sequence.
 
 ```bash
 flutter clean
@@ -58,41 +58,41 @@ flutter pub get
 flutter build macos --release
 ```
 
-`flutter clean`이 모든 오류를 해결하는 것은 아니지만 이전 플랫폼 빌드 결과나 변경 전 플러그인 캐시의 영향을 배제하는 기본 점검으로 유용합니다.
+`flutter clean` does not solve every issue, but it is a useful baseline step for removing stale platform build artifacts and plugin caches.
 
-## 플러그인의 macOS 지원 확인
+## Check whether plugins support macOS
 
-Windows에서 정상 동작하던 패키지가 macOS까지 지원한다고 단정할 수는 없습니다.
+A package that works on Windows does not necessarily support macOS.
 
-특히 다음 기능은 확인이 필요합니다.
+Pay particular attention to features such as:
 
-- 파일 시스템 접근
-- 시스템 트레이
-- 로컬 프로세스 실행
-- 네이티브 라이브러리
-- Windows 전용 API
+- File system access
+- System tray integration
+- Local process execution
+- Native libraries
+- Windows-only APIs
 
-플랫폼별 구현이 필요하면 Dart에서 구분할 수 있습니다.
+When platform-specific logic is required, separate it in Dart.
 
 ```dart
 import 'dart:io';
 
 if (Platform.isWindows) {
-    // Windows 처리
+    // Windows handling
 } else if (Platform.isMacOS) {
-    // macOS 처리
+    // macOS handling
 }
 ```
 
-## Windows 실행파일은 macOS에서 실행할 수 없다
+## Windows executables cannot run on macOS
 
-Flutter 앱에서 별도의 로컬 프로그램을 호출하는 구조라면 중요한 차이가 있습니다.
+If the Flutter app launches a separate local program, platform differences become important.
 
 ```text
 Flutter → Local executable → Result
 ```
 
-Windows용 `.exe`는 macOS에서 그대로 사용할 수 없습니다. 플랫폼별 바이너리를 따로 준비해야 합니다.
+A Windows `.exe` file cannot run directly on macOS. Prepare a separate binary for each platform.
 
 ```text
 assets/
@@ -102,17 +102,17 @@ assets/
     └── worker
 ```
 
-Python 프로그램을 PyInstaller 등으로 패키징하는 경우에도 Windows용과 macOS용 실행파일을 각각 빌드해야 합니다.
+The same rule applies when packaging a Python program with tools such as PyInstaller. Build the Windows and macOS executables separately.
 
-## 파일 경로도 점검하기
+## Review file paths
 
-Windows 경로 구분자를 직접 사용한 코드는 macOS에서 문제가 될 수 있습니다.
+Code that hardcodes Windows path separators can fail on macOS.
 
 ```dart
 final filePath = '$basePath\\data\\result.xlsx';
 ```
 
-가능하면 `path` 패키지를 사용합니다.
+Use the `path` package instead.
 
 ```dart
 import 'package:path/path.dart' as p;
@@ -120,22 +120,22 @@ import 'package:path/path.dart' as p;
 final filePath = p.join(basePath, 'data', 'result.xlsx');
 ```
 
-`/Users/user/...` 같은 로컬 개발 경로도 코드에 고정하지 않고 실행 시 적절한 디렉터리를 구하도록 구성하는 것이 좋습니다.
+Also avoid hardcoding local development paths such as `/Users/user/...`. Resolve appropriate directories at runtime instead.
 
-## macOS 실행 권한 확인
+## Check executable permissions on macOS
 
-외부 바이너리가 존재해도 실행 권한이 없으면 실행되지 않습니다.
+Even if an external binary exists, macOS will not run it without execute permission.
 
 ```bash
 ls -l path/to/worker
 chmod +x path/to/worker
 ```
 
-Git으로 프로젝트를 공유한다면 실행 권한이 유지되는지도 확인합니다. Windows 개발에서는 잘 드러나지 않던 차이입니다.
+If the project is shared through Git, verify that the executable bit is preserved. This difference is easy to miss when development is centered on Windows.
 
-## Xcode 네이티브 설정 확인
+## Review native Xcode settings
 
-Flutter macOS 프로젝트는 내부적으로 Xcode 프로젝트를 사용합니다.
+A Flutter macOS project uses an Xcode project internally.
 
 ```text
 macos/
@@ -145,48 +145,48 @@ macos/
 └── Podfile
 ```
 
-필요하면 직접 열어 확인합니다.
+Open the workspace directly when native settings need inspection.
 
 ```bash
 open macos/Runner.xcworkspace
 ```
 
-Deployment Target, Signing, Bundle Identifier, Framework 설정 등 네이티브 빌드 단계의 문제를 확인할 수 있습니다.
+Check items such as the Deployment Target, signing settings, Bundle Identifier, and framework configuration.
 
-## Release 앱 생성 위치
+## Where the Release app is generated
 
-최종적으로 다음 명령을 실행합니다.
+Build the final release app with:
 
 ```bash
 flutter build macos --release
 ```
 
-정상적으로 완료되면 일반적으로 결과는 다음 위치에 생성됩니다.
+When the build succeeds, the result is typically created at:
 
 ```text
 build/macos/Build/Products/Release/MyApp.app
 ```
 
-`--release`로 생성했으므로 Debug 앱이 아닌 Release 결과물입니다.
+Because the command uses `--release`, this is a Release build rather than a Debug build.
 
-## 빌드 성공과 외부 배포는 다르다
+## A successful build is not the same as external distribution
 
-개발 Mac에서 `.app`이 실행된다고 해서 다른 Mac에 바로 배포할 수 있다는 의미는 아닙니다.
+An app running successfully on the development Mac does not mean it is ready to distribute to other Macs.
 
-외부 배포에서는 추가로 다음 항목을 검토해야 합니다.
+For external distribution, also review:
 
 - Code Signing
-- Developer ID 인증서
+- Developer ID certificates
 - Hardened Runtime
 - Notarization
 - Gatekeeper
-- 앱에 포함된 외부 바이너리의 서명
+- Signing of bundled external binaries
 
-특히 별도의 실행파일을 앱에 포함한다면 메인 `.app`뿐 아니라 해당 바이너리도 배포 과정에 영향을 줄 수 있습니다.
+If the app contains a separate executable, that binary can also affect the signing and distribution process.
 
-## 빌드 자동화
+## Automate repeated builds
 
-반복 빌드한다면 쉘 스크립트로 정리할 수 있습니다.
+If the same build steps are repeated often, wrap them in a shell script.
 
 ```bash
 #!/bin/bash
@@ -200,29 +200,29 @@ flutter build macos --release
 echo "macOS Release build completed."
 ```
 
-실행 권한을 부여합니다.
+Grant execute permission and run it.
 
 ```bash
 chmod +x build_macos.sh
 ./build_macos.sh
 ```
 
-실제 배포 스크립트에는 플랫폼별 실행파일 복사, 버전 확인, ZIP 생성 등의 과정을 추가할 수 있습니다.
+A production build script can also copy platform-specific executables, verify versions, and create a ZIP package.
 
-## 정리
+## Summary
 
-기존 Windows용 Flutter 프로젝트를 macOS로 확장할 때는 다음 순서로 점검하면 문제 범위를 좁히기 쉽습니다.
+When extending an existing Windows Flutter project to macOS, the following order helps narrow down build problems.
 
 ```text
-1. macOS 플랫폼 프로젝트 확인
-2. flutter doctor -v로 개발 환경 확인
-3. flutter clean / flutter pub get
-4. 플러그인의 macOS 지원 확인
-5. Windows 전용 코드와 실행파일 확인
-6. 파일 경로와 실행 권한 확인
-7. Xcode 네이티브 설정 확인
-8. flutter build macos --release
-9. 외부 배포 시 Signing과 Notarization 검토
+1. Confirm the macOS platform project exists
+2. Check the development environment with flutter doctor -v
+3. Run flutter clean and flutter pub get
+4. Verify plugin support for macOS
+5. Review Windows-specific code and executables
+6. Check file paths and executable permissions
+7. Review native Xcode settings
+8. Run flutter build macos --release
+9. Review signing and notarization for external distribution
 ```
 
-단순한 Flutter UI만 사용하는 프로젝트보다 로컬 실행파일, 파일 시스템, 네이티브 라이브러리를 사용하는 데스크톱 앱에서 플랫폼 차이가 더 크게 나타납니다. Windows에서 정상 동작했던 운영체제 의존 부분을 하나씩 macOS 기준으로 확인하는 것이 핵심입니다.
+Platform differences become more significant in desktop apps that rely on local executables, file system access, or native libraries. The key is to identify each operating-system-dependent part that worked on Windows and verify it separately for macOS.
