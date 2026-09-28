@@ -23,7 +23,6 @@ const {
 } = Astro.props;
 
 const homeUrl = lang === 'ko' ? '/ko/' : '/en/';
-
 const site = Astro.site ?? new URL('https://kjhdev.github.io');
 const canonicalURL = new URL(Astro.url.pathname, site);
 const imageURL = new URL(image, site);
@@ -33,35 +32,21 @@ const rssURL = new URL(`/${lang}/rss.xml`, site);
 <!doctype html>
 <html lang={lang}>
   <head>
-    <!-- 기본 메타 -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-
     <title>{title}</title>
     <meta name="description" content={description} />
-
-    <!-- Google Analytics -->
     <GoogleAnalytics />
-
-    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3227222245611825" crossorigin="anonymous"></script>
-
-    <!-- App Icons -->
     <link rel="icon" type="image/png" href="/gg.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#fcfaf1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="KJH Dev" />
-
-    <!-- Canonical -->
     <link rel="canonical" href={canonicalURL} />
-
-    <!-- hreflang -->
     {koUrl && <link rel="alternate" hreflang="ko" href={new URL(koUrl, site)} />}
     {enUrl && <link rel="alternate" hreflang="en" href={new URL(enUrl, site)} />}
-
-    <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={type} />
@@ -69,45 +54,29 @@ const rssURL = new URL(`/${lang}/rss.xml`, site);
     <meta property="og:image" content={imageURL} />
     <meta property="og:site_name" content="KJH Dev" />
     <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
-
-    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
-
-    <!-- RSS -->
-    <link
-        rel="alternate"
-        type="application/rss+xml"
-        title={lang === 'ko' ? 'KJH Dev 한국어 RSS' : 'KJH Dev English RSS'}
-        href={rssURL}
-    />
-
-    <!-- Sitemap -->
+    <link rel="alternate" type="application/rss+xml" title={lang === 'ko' ? 'KJH Dev 한국어 RSS' : 'KJH Dev English RSS'} href={rssURL} />
     <link rel="sitemap" href="/sitemap-index.xml" />
   </head>
-
   <body>
     <header class="site-header">
       <div class="header-inner">
         <a class="site-title" href={homeUrl}>KJH Dev</a>
-
         <nav class="site-nav">
           <a href={homeUrl}>{lang === 'ko' ? '홈' : 'Home'}</a>
-          <a href={`/${lang}/categories/`}>
-            {lang === 'ko' ? '카테고리' : 'Categories'}
-          </a>
+          <a href={`/${lang}/categories/`}>{lang === 'ko' ? '카테고리' : 'Categories'}</a>
+          <a href={`/${lang}/about/`}>{lang === 'ko' ? '소개' : 'About'}</a>
         </nav>
       </div>
     </header>
-
-    <main class="main-container">
-      <slot />
-    </main>
-
+    <main class="main-container"><slot /></main>
     <footer class="site-footer">
-      <div class="footer-inner">© 2026 KJH Dev</div>
+      <div class="footer-inner">
+        © 2026 KJH Dev · <a href={`/${lang}/about/`}>{lang === 'ko' ? '소개' : 'About'}</a> · <a href={`/${lang}/privacy/`}>{lang === 'ko' ? '개인정보처리방침' : 'Privacy'}</a>
+      </div>
     </footer>
   </body>
 </html>
