@@ -1,198 +1,123 @@
 ---
-title: "GitHub Actions Self-hosted Runner로 내부 서버 자동 배포하기"
+title: "Synology 내부 서버를 GitHub Actions Self-hosted Runner로 자동 배포한 과정"
 pubDate: "2026-09-22T07:36:00+09:00"
-description: "외부에서 직접 SSH로 접근하기 어려운 내부 서버에 GitHub Actions Self-hosted Runner를 설치해 main push를 자동 배포로 연결하는 구조와 설정 시 주의점을 정리한다."
+description: "Synology VM의 Ubuntu 서버에서 여러 Docker 서비스를 운영하면서 외부 SSH 배포 대신 Self-hosted Runner로 main push와 배포를 연결한 실제 구성과 운영 시 주의점을 정리합니다."
 category: "DevOps"
-tags: ["GitHub Actions", "Self-hosted Runner", "CI/CD", "Deployment", "Docker"]
+tags: ["GitHub Actions", "Self-hosted Runner", "CI/CD", "Deployment", "Docker", "Synology"]
 lang: "ko"
 ---
 
-# GitHub Actions Self-hosted Runner로 내부 서버 자동 배포하기
+개인 프로젝트 여러 개를 Synology VM의 Ubuntu 서버에서 Docker로 운영하면서 배포 방식이 점점 번거로워졌다. 로컬에서 수정한 뒤 GitHub에 push하고 다시 서버에 접속해 `git pull`과 Docker 재시작을 반복하는 방식이었다.
 
-개발 서버에서 주기적으로 `git pull`을 실행하는 방식은 단순하지만, 배포 시점을 서버가 직접 확인해야 한다.
+서버는 내부망에 있고, 배포만을 위해 SSH를 인터넷에 넓게 공개하고 싶지는 않았다. 그래서 **GitHub Actions Self-hosted Runner를 서버 쪽에 두고 `main` push를 배포 시작점으로 만드는 구조**로 변경했다.
 
-반대로 GitHub의 `main` 브랜치에 코드가 반영되는 순간 배포를 시작하면 소스 변경과 배포 시점을 일치시키기 쉽다.
-
-문제는 배포 대상이 공유기나 방화벽 뒤의 내부 서버일 때다. GitHub-hosted Runner에서 해당 서버로 직접 SSH 접속할 수 없다면 **Self-hosted Runner를 내부 서버에 설치해 작업을 받아 실행하는 방식**을 사용할 수 있다.
-
-## 기존 pull 방식의 한계
-
-서버가 직접 저장소를 확인하는 구조는 보통 다음과 같다.
+## 바꾸기 전과 후
 
 ```text
-개발 PC → GitHub
-             ↑
-          서버가 pull
+기존
+Mac → GitHub push
+     → 서버 SSH 접속
+     → git pull
+     → docker compose 재배포
+
+변경
+Mac → GitHub main push
+     → GitHub Actions
+     → 내부 Self-hosted Runner
+     → build / deploy
 ```
 
-수동 `git pull`이라면 배포할 때마다 서버에 접속해야 한다. cron으로 자동화하면 변경 여부와 관계없이 정해진 시간에 확인하는 구조가 된다.
+이 구조의 장점은 GitHub-hosted Runner가 사설망 서버로 SSH 접속할 필요가 없다는 점이었다. 내부 Runner가 GitHub에서 작업을 받아 서버에서 직접 실행한다.
 
-CI/CD 관점에서는 GitHub의 변경 이벤트를 기준으로 배포 작업을 시작하는 편이 흐름을 추적하기 쉽다.
+## 여러 Docker 프로젝트에서 중요했던 점
 
-## 내부 서버가 문제인 이유
+서버에는 하나의 서비스만 있는 것이 아니었다. 여러 프로젝트가 각자의 Compose 파일과 포트를 사용한다. 따라서 Runner에 무조건 root 권한을 주고 아무 디렉터리에서나 배포하도록 만드는 대신 **저장소별 배포 경로와 명령을 명확하게 분리**하는 것이 중요했다.
 
-GitHub-hosted Runner에서 SSH로 배포하려면 대상 서버가 Runner에서 접근 가능한 네트워크에 있어야 한다.
-
-하지만 서버가 사설 IP만 사용하고 외부 SSH를 열지 않았다면 다음 연결은 성립하지 않는다.
-
-```text
-GitHub-hosted Runner
-        X
-        ↓
-192.168.x.x 내부 서버
-```
-
-이 문제를 해결하기 위해 배포 서버 또는 같은 내부망의 머신에서 Self-hosted Runner를 실행할 수 있다.
-
-## Self-hosted Runner 구조
-
-Self-hosted Runner는 GitHub Actions 작업을 직접 실행하는 머신이다.
-
-```text
-main push
-   ↓
-GitHub Actions
-   ↓
-Self-hosted Runner
-   ↓
-내부 서버에서 build / deploy
-```
-
-핵심은 GitHub가 내부 서버의 SSH 포트로 직접 들어오는 구조가 아니라는 점이다. Runner가 GitHub Actions와 통신하면서 할당된 작업을 받아 실행한다.
-
-따라서 배포를 위해 내부 서버의 SSH 포트를 인터넷에 공개하는 구조를 피할 수 있다.
-
-## Runner 등록
-
-GitHub 저장소의 Actions Runner 설정에서 운영체제에 맞는 설치 명령을 확인한다.
-
-Linux 서버라면 일반적인 과정은 다음과 같다.
-
-```bash
-mkdir actions-runner
-cd actions-runner
-
-# GitHub에서 안내하는 Runner 패키지 다운로드 및 압축 해제
-# 저장소 설정 화면에서 발급된 등록 명령 실행
-
-./config.sh --url https://github.com/username/project --token <registration-token>
-```
-
-등록 토큰은 예시나 저장소에 남기지 않는다. GitHub 설정 화면에서 제공되는 현재 명령을 사용한다.
-
-등록 후 Runner를 실행한다.
-
-```bash
-./run.sh
-```
-
-운영 서버에서는 터미널 종료와 함께 Runner가 멈추지 않도록 서비스 방식으로 실행하는 것이 적합하다.
-
-## workflow 작성
-
-`.github/workflows/deploy.yml`을 만들고 `main` push를 트리거로 지정한다.
+기본 workflow는 단순하다.
 
 ```yaml
 name: Deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: self-hosted
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Deploy
         run: ./deploy.sh
 ```
 
-`runs-on: self-hosted`가 GitHub-hosted Runner와의 핵심 차이다.
+실제 차이는 `deploy.sh` 안에서 생긴다. 프로젝트마다 필요한 빌드, Compose 파일, 환경변수, 재시작 범위가 다르기 때문이다.
 
-이제 `main`에 push되면 등록된 Self-hosted Runner가 작업을 받아 `deploy.sh`를 실행한다.
+## Runner와 서비스 디렉터리를 구분한다
 
-## 서버에서 다시 git pull 해야 할까
+`actions/checkout`은 Runner 작업 디렉터리에 해당 커밋을 checkout한다. 운영 디렉터리에서 계속 `git pull`하는 방식과 혼합하면 어느 소스가 실제 배포됐는지 헷갈릴 수 있다.
 
-`actions/checkout`을 사용하면 Runner의 작업 디렉터리에 해당 커밋이 checkout된다.
-
-따라서 기존처럼 별도의 운영 디렉터리에서 `git pull`하는 구조를 반드시 유지할 필요는 없다.
-
-예를 들어 빌드 결과물을 배포하는 방식이라면 다음 흐름으로 바꿀 수 있다.
+둘 중 하나를 명확히 선택하는 편이 좋았다.
 
 ```text
-GitHub main
-   ↓
-actions/checkout
-   ↓
-build
-   ↓
-Docker image 또는 배포 파일 생성
-   ↓
-서비스 재시작
+A. Runner workspace에서 빌드 → 산출물/이미지 배포
+B. 운영 디렉터리를 명시적으로 동기화 → 해당 디렉터리에서 Compose 실행
 ```
 
-소스 저장소와 실제 실행 디렉터리를 분리하면 배포 과정도 더 명확해진다.
+## Docker 배포는 서비스 범위를 작게 잡는다
 
-## Docker 프로젝트 배포 예시
-
-서버에서 Docker Compose로 서비스를 운영한다면 `deploy.sh`를 다음처럼 구성할 수 있다.
+단순 예시는 다음과 같다.
 
 ```bash
 #!/bin/bash
-set -e
+set -euo pipefail
 
 docker compose build
 docker compose up -d
 ```
 
-실제 프로젝트에서는 테스트, 환경변수 확인, 이미지 정리 등 필요한 절차를 추가한다.
+여러 서비스가 같은 서버에 있을 때는 한 프로젝트를 배포하면서 관계없는 컨테이너까지 내리지 않는 것이 중요하다. 습관적으로 전체 Docker를 재시작하거나 불필요하게 `docker compose down`을 사용하는 방식은 피했다.
 
-중요한 점은 `.env`, API Key, 비밀번호 같은 값을 workflow 파일에 직접 작성하지 않는 것이다.
+## 실제 운영에서 겪은 문제: Runner가 있다고 배포가 항상 되는 것은 아니다
 
-## Runner 권한을 최소화한다
+Self-hosted Runner는 서버 상태의 영향을 그대로 받는다.
 
-Self-hosted Runner의 workflow는 서버에서 실제 명령을 실행한다.
+예를 들어 서버 디스크가 가득 차면 Docker build가 실패하고, Runner 프로세스나 작업 디렉터리에 문제가 생기면 workflow도 진행되지 않는다. 실제 운영에서는 소스만 보는 것보다 다음을 함께 확인해야 했다.
 
-따라서 Runner 계정에 불필요한 root 권한을 주지 않는 것이 중요하다.
-
-Docker 명령이 필요하다면 필요한 범위의 권한만 부여하고, 배포와 관계없는 디렉터리나 서비스에 접근하지 못하도록 구성한다.
-
-특히 외부 기여자가 임의의 workflow를 실행할 수 있는 저장소에서는 Self-hosted Runner 사용 범위를 더 엄격하게 제한해야 한다.
-
-## main push와 배포를 분리하고 싶다면
-
-모든 `main` push를 즉시 운영 배포로 연결할 필요는 없다.
-
-테스트 작업과 배포 작업을 분리해 다음처럼 구성할 수도 있다.
-
-```text
-push
- ↓
-test
- ↓
-build
- ↓
-deploy
+```bash
+df -h
+docker ps
+docker system df
 ```
 
-테스트가 실패하면 deploy 단계가 실행되지 않도록 구성하면 잘못된 빌드가 서버에 반영되는 것을 줄일 수 있다.
+Git 저장소에 `index.lock` 같은 비정상 상태가 남아 있거나 서버 재부팅 후 Runner/컨테이너 상태가 달라진 경우도 배포 실패 원인이 될 수 있다.
 
-## 정리
+즉 Self-hosted Runner는 "GitHub가 알아서 서버를 관리해 주는 서비스"가 아니라 **내 서버에서 CI/CD 명령을 실행하는 에이전트**다.
 
-내부 서버의 배포 방식을 서버 주도의 `git pull`에서 GitHub Actions 중심으로 바꾸려면 네트워크 접근 방식을 먼저 확인해야 한다.
+## 환경변수와 비밀값은 저장소에 넣지 않는다
 
-외부에서 서버로 직접 접근하기 어렵다면 Self-hosted Runner가 실용적인 선택지가 된다.
+서버에서 사용하는 `.env`, API Key, DB 비밀번호는 workflow 예제에 직접 넣지 않는다. 배포 스크립트도 비밀값을 출력하지 않도록 한다.
 
 ```text
-기존
-서버 → GitHub 확인 → git pull
-
-변경
-GitHub push → Actions 작업 생성 → 내부 Runner가 작업 실행
+Git 저장소: 소스와 배포 절차
+서버: 실행 환경에 필요한 비밀값
 ```
 
-이 구조에서는 내부 서버의 SSH 포트를 배포 목적으로 외부에 공개하지 않고도 `main` push를 자동 빌드와 배포로 연결할 수 있다.
+## 배포 성공 기준을 workflow 종료로만 잡지 않는다
+
+Docker 명령이 exit 0으로 끝났더라도 애플리케이션이 정상 기동하지 못할 수 있다. 최소한 컨테이너 상태와 최근 로그를 확인하는 단계를 두는 것이 좋다.
+
+```bash
+docker compose ps
+docker compose logs --tail=100
+```
+
+가능하면 서비스의 health check나 실제 HTTP 응답 확인까지 연결한다.
+
+## 이 구조가 잘 맞았던 이유
+
+내부 서버를 계속 운영하면서 프로젝트 수가 늘어날수록 수동 SSH 배포는 반복 작업이 됐다. Self-hosted Runner로 바꾼 뒤에는 `main`에 어떤 커밋이 들어갔는지와 어떤 배포 작업이 실행됐는지를 GitHub Actions에서 함께 추적할 수 있게 됐다.
+
+다만 자동화의 범위는 작게 유지하는 편이 안전했다. 저장소 하나의 배포가 다른 Docker 프로젝트에 영향을 주지 않도록 하고, 실패하면 로그에서 어느 단계가 문제인지 확인할 수 있어야 한다.
+
+Self-hosted Runner의 핵심 장점은 단순히 "자동 배포"가 아니라 **사설망 서버를 외부 배포용 SSH 대상으로 만들지 않고도 GitHub 이벤트와 내부 서버 작업을 연결할 수 있다는 것**이다.

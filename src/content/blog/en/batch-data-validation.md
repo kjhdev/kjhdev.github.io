@@ -1,178 +1,137 @@
 ---
-title: "Validating Large Batch Data After Collection"
+title: "What 2,555 Stocks Taught Me About Batch Data Validation"
 pubDate: "2026-09-23T07:30:40+09:00"
-description: "A practical validation design for large Python and MySQL batch loads, covering per-item coverage, date ranges, consistency rules, expected exceptions, and rerun safety."
+description: "A practical validation design learned while loading two years of data for 2,555 stocks: coverage, date ranges, duplicates, consistency rules, source-data exceptions, and rerun safety."
 category: "Data Engineering"
 tags: ["Python", "MySQL", "Batch", "Data Validation", "ETL"]
 lang: "en"
 ---
 
-# Validating Large Batch Data After Collection
+The biggest lesson from building a large API collector was that **a finished collector does not mean the stored dataset is correct**.
 
-When an API load inserts hundreds of thousands or millions of rows into MySQL, a completed `INSERT` does not prove that collection succeeded.
+The real workload covered 2,555 KOSPI and KOSDAQ common stocks. Two years of daily price history produced more than 1.6 million rows. At that scale, checking a few symbols or running only `COUNT(*)` cannot prove completeness.
 
-Partial omissions, missing date ranges, and legitimate no-data cases are often more dangerous than a visible exception. This article describes a separate validation stage for large batch loads.
+The success condition therefore changed from "no exception and row count increased" to "collection completed and an independent validator passed."
 
-## Separate collection from validation
-
-A collector becomes difficult to maintain when it also owns every validation rule. A separate validator keeps responsibilities clear.
+## Validation pipeline
 
 ```text
-Run collector
-  ↓
-Load database
-  ↓
-Validate each dataset
-  ↓
-PASS / WARNING / FAIL
+API collection
+→ MySQL load
+→ total count
+→ coverage for all 2,555 targets
+→ per-symbol date range
+→ duplicates and consistency
+→ accepted source exceptions
+→ PASS / WARNING / FAIL
 ```
 
-The collector focuses on API calls and persistence. The validator checks whether the stored result satisfies expected conditions.
-
-## Total row count is only a starting point
-
-A total count is useful as a first check.
+A total count is only the first signal:
 
 ```sql
-SELECT COUNT(*)
-FROM stock_data_daily;
+SELECT COUNT(*) FROM stock_price_daily;
 ```
 
-A large count does not prove completeness. One item may contain many rows while another item is completely missing.
-
-Check the distribution per item as well.
+The more important check compares the master list with stored data.
 
 ```sql
-SELECT item_code,
-       COUNT(*) AS row_count,
+SELECT m.stock_code
+FROM stock_master m
+LEFT JOIN stock_price_daily d ON d.stock_code = m.stock_code
+GROUP BY m.stock_code
+HAVING COUNT(d.stock_code) = 0;
+```
+
+The useful metric is not simply "over 1.6 million rows" but **how many of the 2,555 expected symbols are represented correctly**.
+
+## Validate the time range per symbol
+
+```sql
+SELECT stock_code,
+       COUNT(*) AS cnt,
        MIN(trade_date) AS min_date,
        MAX(trade_date) AS max_date
-FROM stock_data_daily
-GROUP BY item_code;
+FROM stock_price_daily
+GROUP BY stock_code;
 ```
 
-## Validate coverage per target
+A newly listed company cannot have two full years of history, so a smaller row count is not automatically a failure. Validation needs master metadata and expected availability rules.
 
-If a master table defines active collection targets, compare it with the loaded dataset to find missing items.
+## Do not classify every zero-row result as a failure
 
-```sql
-SELECT m.item_code
-FROM item_master m
-LEFT JOIN stock_data_daily d
-    ON d.item_code = m.item_code
-WHERE m.active = 1
-GROUP BY m.item_code
-HAVING COUNT(d.item_code) = 0;
-```
+Some managed or exceptional securities can legitimately have no source data. Treating every empty result as a collection failure creates permanent false alarms.
 
-The important question is not only how many rows exist, but whether **every expected target has the required data**.
-
-For historical datasets, also validate minimum and maximum dates. Newly registered items may not have the full history, so their start date needs a separate rule.
-
-## Distinguish no source data from collection failure
-
-Treating every zero-row result as a failure creates false alarms.
-
-A suspended, newly registered, or otherwise exceptional item may legitimately have no source data. A validator can classify results into three levels.
+I separated results into:
 
 ```text
-PASS    expected conditions satisfied
-WARNING acceptable source-data exception
-FAIL    missing or inconsistent data
+PASS    expected data and consistency rules satisfied
+WARNING explainable source-data exception
+FAIL    real omission, duplicate, or invalid value
 ```
 
-Every accepted exception should have a reason. Silently ignoring errors can hide real collection failures.
+Warnings still record the symbol, state, and reason. An exception without evidence quickly becomes a blind spot.
 
-## Validate relationships inside the data
+## A real consistency trap: investor-value residuals
 
-After coverage checks, validate relationships between columns.
+Investor-flow data was checked by comparing component totals. Quantity relationships were useful validation rules, while monetary values produced many residuals because of source units and aggregation behavior.
 
-If several component values are expected to equal a total, compare them in SQL or Python.
+A strict `difference != 0 → FAIL` rule would have rejected valid data repeatedly. After examining the source behavior, quantity inconsistencies remained failure candidates while monetary residuals were counted as informational warnings.
 
-```text
-sum of components == total
-```
+This changed an important design rule: **validation tolerances should come from observed source behavior, not arbitrary assumptions.**
 
-Small residuals may be legitimate when the source uses unit conversion, rounding, or a different aggregation rule. In that case, define an explicit tolerance and report the difference as an informational warning instead of automatically failing the batch.
+## Reruns must be safe
 
-The tolerance should come from observed source-data behavior rather than an arbitrary number.
+A multi-million-row initialization can stop because of a server restart or API limit. Restarting should not create duplicates.
 
-## Rerun safety is part of validation
-
-A failed batch may need to run again. The same item and date should not create duplicate rows.
-
-Where possible, enforce a natural or business key in the database.
+Use a business key such as symbol and trade date:
 
 ```sql
-UNIQUE KEY uk_item_date (item_code, trade_date)
+UNIQUE KEY uk_stock_date (stock_code, trade_date)
 ```
 
-The collector can then use a project-appropriate rerun strategy such as `INSERT ... ON DUPLICATE KEY UPDATE`.
-
-The validator should still check for duplicates.
+Then verify duplicates independently:
 
 ```sql
-SELECT item_code, trade_date, COUNT(*)
-FROM stock_data_daily
-GROUP BY item_code, trade_date
+SELECT stock_code, trade_date, COUNT(*)
+FROM stock_price_daily
+GROUP BY stock_code, trade_date
 HAVING COUNT(*) > 1;
 ```
 
-## Make validation logs useful to humans
+## Logs should preserve evidence
 
-A single `validation succeeded` message provides little evidence when a problem appears later.
-
-Useful summary output includes:
+Useful validation output includes:
 
 ```text
-total row count
-per-target coverage result
-minimum and maximum dates
-accepted no-source-data targets
+total rows
+master coverage
+per-symbol date anomalies
+accepted no-source-data symbols
 consistency warning count
 duplicate count
 final PASS / FAIL
 ```
 
-There is no need to print millions of rows. Log summary counts and only the targets that need attention.
+A single "success" message is not enough when the dataset later becomes an input to analysis.
 
-## Stop downstream steps when validation fails
+## Propagate validation failure
 
-A validator should return a meaningful process exit code as well as readable logs.
+The Python validator exits non-zero when real errors exist:
 
 ```python
 if errors:
     raise SystemExit(1)
-
 raise SystemExit(0)
 ```
 
-A shell script or CI job can then stop subsequent stages after a failed validation.
+A shell pipeline can then stop immediately:
 
 ```bash
+set -e
 python collect.py
-python validate_data.py
+python validate_raw_data.py --dataset price --history-years 2
 ```
 
-With `set -e`, a non-zero validator exit code prevents the batch from continuing.
+The same rules can be reused for a two-year initial load and a daily incremental load. The volume changes; the quality gate should not.
 
-## Reuse the same rules for initial and daily loads
-
-A multi-year initial load and a daily incremental batch have different volumes, but many validation rules can be shared.
-
-Pass the dataset and history range as arguments instead of creating a new validator for every collector.
-
-```bash
-python validate_data.py --dataset price --history-years 2
-python validate_data.py --dataset investor --history-years 2
-```
-
-A daily batch can reuse the same rules with a narrower validation period.
-
-## Conclusion
-
-A large collection job is not complete merely because API calls finished or the database row count increased.
-
-Validate total counts, per-target coverage, date ranges, duplicates, internal consistency, and legitimate source-data exceptions before treating the dataset as analysis-ready.
-
-Separating collection from validation and propagating failures to downstream steps gives both initial bulk loads and recurring daily batches a consistent quality gate.
+The key improvement was redefining "collection complete." It now means coverage, ranges, duplicates, consistency, and known exceptions have been checked—not merely that API calls ended. At large scale, evidence that the data can be trusted is more valuable than a large row count alone.
