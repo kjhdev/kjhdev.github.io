@@ -4,62 +4,27 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { categoryToSlug } from '../../../utils/category';
 
 export async function getStaticPaths() {
-  const posts = await getCollection(
-    'blog',
-    ({ data }) => !data.draft
-  );
-
-  return posts.map((post) => {
-    const slug = post.id.split('/').pop();
-
-    return {
-      params: {
-        lang: post.data.lang,
-        slug,
-      },
-      props: {
-        post,
-      },
-    };
-  });
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { lang: post.data.lang, slug: post.id.split('/').pop() },
+    props: { post },
+  }));
 }
 
 const { post } = Astro.props;
 const { Content } = await render(post);
-
 const lang = post.data.lang as 'ko' | 'en';
 const slug = post.id.split('/').pop()!;
-
-/*
- * 같은 slug를 가진 실제 번역 글을 확인한다.
- * 존재하는 언어 페이지만 BaseLayout에 전달하므로,
- * 404 페이지를 hreflang으로 연결하지 않는다.
- */
-const allPosts = await getCollection(
-  'blog',
-  ({ data }) => !data.draft
-);
-
-const koPost = allPosts.find(
-  (item) =>
-    item.data.lang === 'ko' &&
-    item.id.split('/').pop() === slug
-);
-
-const enPost = allPosts.find(
-  (item) =>
-    item.data.lang === 'en' &&
-    item.id.split('/').pop() === slug
-);
-
-const formattedDate = post.data.pubDate.toLocaleDateString(
-  lang === 'ko' ? 'ko-KR' : 'en-US',
-  {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }
-);
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const koPost = allPosts.find((item) => item.data.lang === 'ko' && item.id.split('/').pop() === slug);
+const enPost = allPosts.find((item) => item.data.lang === 'en' && item.id.split('/').pop() === slug);
+const relatedPosts = allPosts
+  .filter((item) => item.data.lang === lang && item.id !== post.id && item.data.category === post.data.category)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 3);
+const formattedDate = post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', {
+  year: 'numeric', month: 'long', day: 'numeric',
+});
 ---
 
 <BaseLayout
@@ -72,42 +37,35 @@ const formattedDate = post.data.pubDate.toLocaleDateString(
 >
   <article class="article">
     <header class="article-header">
-      {
-        post.data.category && (
-          <a
-            class="article-category"
-            href={`/${lang}/categories/${categoryToSlug(post.data.category)}/`}
-          >
-            {post.data.category}
-          </a>
-        )
-      }
-
-      <h1 class="article-title">
-        {post.data.title}
-      </h1>
-
-      <div class="article-date">
-        {formattedDate}
-      </div>
-
-      {
-        post.data.tags.length > 0 && (
-          <div class="article-tags">
-            {
-              post.data.tags.map((tag) => (
-                <span class="article-tag">
-                  #{tag}
-                </span>
-              ))
-            }
-          </div>
-        )
-      }
+      {post.data.category && (
+        <a class="article-category" href={`/${lang}/categories/${categoryToSlug(post.data.category)}/`}>
+          {post.data.category}
+        </a>
+      )}
+      <h1 class="article-title">{post.data.title}</h1>
+      <div class="article-date">{formattedDate}</div>
+      {post.data.tags.length > 0 && (
+        <div class="article-tags">
+          {post.data.tags.map((tag) => <span class="article-tag">#{tag}</span>)}
+        </div>
+      )}
     </header>
-
-    <div class="article-body">
-      <Content />
-    </div>
+    <div class="article-body"><Content /></div>
+    {relatedPosts.length > 0 && (
+      <aside class="related-posts" aria-label={lang === 'ko' ? '관련 글' : 'Related posts'}>
+        <h2>{lang === 'ko' ? '같이 보면 좋은 글' : 'Related posts'}</h2>
+        <div class="related-post-list">
+          {relatedPosts.map((item) => {
+            const relatedSlug = item.id.split('/').pop();
+            return (
+              <a href={`/${lang}/posts/${relatedSlug}/`}>
+                <strong>{item.data.title}</strong>
+                <span>{item.data.description}</span>
+              </a>
+            );
+          })}
+        </div>
+      </aside>
+    )}
   </article>
 </BaseLayout>
