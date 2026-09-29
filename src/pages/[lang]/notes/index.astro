@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { categoryToSlug } from '../../../utils/category';
 
 export function getStaticPaths() {
   return [
@@ -26,6 +27,22 @@ const posts = (await getCollection('blog'))
     (a, b) =>
       b.data.pubDate.getTime() - a.data.pubDate.getTime()
   );
+
+const categoryMap = new Map<string, number>();
+
+for (const post of posts) {
+  const category = post.data.category;
+  if (!category) continue;
+  categoryMap.set(category, (categoryMap.get(category) ?? 0) + 1);
+}
+
+const categories = Array.from(categoryMap.entries())
+  .map(([name, count]) => ({
+    name,
+    count,
+    slug: categoryToSlug(name),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name));
 ---
 
 <BaseLayout
@@ -46,6 +63,20 @@ const posts = (await getCollection('blog'))
           : 'Troubleshooting, configuration, and development tips that are not tied to a single project series.'}
       </p>
     </div>
+
+    {categories.length > 0 && (
+      <nav class="note-category-filter" aria-label={lang === 'ko' ? '개발노트 카테고리' : 'Development note categories'}>
+        <a class="note-category-chip is-active" href={`/${lang}/notes/`}>
+          {lang === 'ko' ? '전체' : 'All'}
+        </a>
+        {categories.map((category) => (
+          <a class="note-category-chip" href={`/${lang}/notes/${category.slug}/`}>
+            {category.name}
+            <span>{category.count}</span>
+          </a>
+        ))}
+      </nav>
+    )}
 
     {
       posts.length === 0 ? (

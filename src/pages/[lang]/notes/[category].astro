@@ -1,0 +1,135 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { categoryToSlug } from '../../../utils/category';
+
+export async function getStaticPaths() {
+  const posts = await getCollection(
+    'blog',
+    ({ data }) => !data.draft && data.postType !== 'project' && !!data.category
+  );
+
+  const categoryMap = new Map<
+    string,
+    {
+      lang: 'ko' | 'en';
+      categoryName: string;
+    }
+  >();
+
+  for (const post of posts) {
+    const categoryName = post.data.category;
+    if (!categoryName) continue;
+
+    const lang = post.data.lang;
+    const categorySlug = categoryToSlug(categoryName);
+    const key = `${lang}:${categorySlug}`;
+
+    categoryMap.set(key, {
+      lang,
+      categoryName,
+    });
+  }
+
+  return Array.from(categoryMap.values()).map(({ lang, categoryName }) => ({
+    params: {
+      lang,
+      category: categoryToSlug(categoryName),
+    },
+    props: {
+      lang,
+      categoryName,
+    },
+  }));
+}
+
+const {
+  lang,
+  categoryName,
+} = Astro.props as {
+  lang: 'ko' | 'en';
+  categoryName: string;
+};
+
+const allNotes = (await getCollection('blog'))
+  .filter(
+    (post) =>
+      post.data.lang === lang &&
+      !post.data.draft &&
+      post.data.postType !== 'project'
+  );
+
+const posts = allNotes
+  .filter((post) => post.data.category === categoryName)
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+const categoryMap = new Map<string, number>();
+for (const post of allNotes) {
+  const category = post.data.category;
+  if (!category) continue;
+  categoryMap.set(category, (categoryMap.get(category) ?? 0) + 1);
+}
+
+const categories = Array.from(categoryMap.entries())
+  .map(([name, count]) => ({
+    name,
+    count,
+    slug: categoryToSlug(name),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<BaseLayout
+  title={`${categoryName} ${lang === 'ko' ? '개발노트' : 'Development Notes'} | KJH Dev`}
+  description={
+    lang === 'ko'
+      ? `${categoryName} 분야의 문제 해결, 설정, 개발 경험을 정리한 개발노트입니다.`
+      : `Development notes about troubleshooting, configuration, and practical experience in ${categoryName}.`
+  }
+  lang={lang}
+>
+  <section>
+    <div class="category-page-header">
+      <h1>{lang === 'ko' ? '개발노트' : 'Development Notes'}</h1>
+      <p>
+        {lang === 'ko'
+          ? `${categoryName} 카테고리의 개발노트를 모아봅니다.`
+          : `Development notes in the ${categoryName} category.`}
+      </p>
+    </div>
+
+    <nav class="note-category-filter" aria-label={lang === 'ko' ? '개발노트 카테고리' : 'Development note categories'}>
+      <a class="note-category-chip" href={`/${lang}/notes/`}>
+        {lang === 'ko' ? '전체' : 'All'}
+      </a>
+      {categories.map((category) => (
+        <a
+          class:list={['note-category-chip', { 'is-active': category.name === categoryName }]}
+          href={`/${lang}/notes/${category.slug}/`}
+        >
+          {category.name}
+          <span>{category.count}</span>
+        </a>
+      ))}
+    </nav>
+
+    <h2 class="note-filter-title">{categoryName}</h2>
+
+    <div class="post-list">
+      {posts.map((post) => {
+        const slug = post.id.split('/').pop();
+
+        return (
+          <a class="post-card" href={`/${lang}/posts/${slug}/`}>
+            <h2 class="post-title">{post.data.title}</h2>
+            <p class="post-description">{post.data.description}</p>
+            <div class="post-meta">
+              {post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US')}
+              {post.data.category && ` · ${post.data.category}`}
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+</BaseLayout>
