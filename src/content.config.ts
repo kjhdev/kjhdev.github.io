@@ -18,7 +18,7 @@ const blog = defineCollection({
     updatedDate: z.coerce.date().optional(),
 
     // 기존 글은 별도 수정 없이 개발노트로 분류한다.
-    // 프로젝트 글은 postType: project 와 project 값을 함께 지정한다.
+    // 프로젝트 글은 postType: project, project: 프로젝트 ID를 지정한다.
     postType: z.enum(['project', 'note']).default('note'),
     project: z.string().trim().min(1).optional(),
     seriesOrder: z.coerce.number().int().positive().optional(),

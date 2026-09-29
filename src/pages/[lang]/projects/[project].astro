@@ -1,0 +1,106 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import {
+  projects,
+  type ProjectDefinition,
+} from '../../../data/projects';
+
+export function getStaticPaths() {
+  return projects.flatMap((project) =>
+    (['ko', 'en'] as const).map((lang) => ({
+      params: { lang, project: project.id },
+      props: { project },
+    }))
+  );
+}
+
+const { lang } = Astro.params;
+const { project } = Astro.props as { project: ProjectDefinition };
+
+if (lang !== 'ko' && lang !== 'en') {
+  throw new Error('Invalid language');
+}
+
+const posts = (await getCollection('blog'))
+  .filter(
+    (post) =>
+      post.data.lang === lang &&
+      !post.data.draft &&
+      post.data.postType === 'project' &&
+      post.data.project === project.id
+  )
+  .sort((a, b) => {
+    const orderA = a.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+    const orderB = b.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+
+    if (orderA !== orderB) return orderA - orderB;
+    return a.data.pubDate.getTime() - b.data.pubDate.getTime();
+  });
+---
+
+<BaseLayout
+  title={`${project.title[lang]} | KJH Dev`}
+  description={project.description[lang]}
+  lang={lang}
+>
+  <section>
+    <a class="back-link" href={`/${lang}/projects/`}>
+      ← {lang === 'ko' ? '프로젝트' : 'Projects'}
+    </a>
+
+    <div class="project-detail-header">
+      <div class="project-card-meta">
+        <span class="project-status">{project.status[lang]}</span>
+        <span>
+          {posts.length}
+          {lang === 'ko' ? '개의 글' : ' posts'}
+        </span>
+      </div>
+      <h1>{project.title[lang]}</h1>
+      <p>{project.description[lang]}</p>
+    </div>
+
+    <section class="project-posts-section">
+      <h2 class="section-title">
+        {lang === 'ko' ? '개발 기록' : 'Development Log'}
+      </h2>
+
+      {posts.length === 0 ? (
+        <div class="post-card">
+          <h3 class="post-title">
+            {lang === 'ko' ? '첫 번째 개발 기록을 준비하고 있습니다.' : 'The first development log is being prepared.'}
+          </h3>
+          <p class="post-description">
+            {lang === 'ko'
+              ? 'Office에서 실제로 구축한 시장 데이터 수집과 자동 브리핑 과정을 순서대로 정리할 예정입니다.'
+              : 'The series will document the actual market-data collection and automated briefing workflow built for Office.'}
+          </p>
+        </div>
+      ) : (
+        <div class="post-list">
+          {posts.map((post) => {
+            const slug = post.id.split('/').pop();
+
+            return (
+              <a class="post-card" href={`/${lang}/posts/${slug}/`}>
+                <div class="post-meta project-series-order">
+                  {post.data.seriesOrder
+                    ? `${lang === 'ko' ? '시리즈 ' : 'Part '}${post.data.seriesOrder}`
+                    : lang === 'ko'
+                      ? '프로젝트 기록'
+                      : 'Project log'}
+                </div>
+                <h3 class="post-title">{post.data.title}</h3>
+                <p class="post-description">{post.data.description}</p>
+                <div class="post-meta">
+                  {post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US')}
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  </section>
+</BaseLayout>
