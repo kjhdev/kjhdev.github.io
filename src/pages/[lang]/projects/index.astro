@@ -1,0 +1,108 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return [
+    { params: { lang: 'ko' } },
+    { params: { lang: 'en' } },
+  ];
+}
+
+const { lang } = Astro.params;
+
+if (lang !== 'ko' && lang !== 'en') {
+  throw new Error('Invalid language');
+}
+
+const projectPosts = (await getCollection('blog'))
+  .filter(
+    (post) =>
+      post.data.lang === lang &&
+      !post.data.draft &&
+      post.data.postType === 'project'
+  );
+
+const projectMap = new Map<string, typeof projectPosts>();
+
+for (const post of projectPosts) {
+  const projectName = post.data.project ?? (lang === 'ko' ? '기타 프로젝트' : 'Other Projects');
+  const items = projectMap.get(projectName) ?? [];
+  items.push(post);
+  projectMap.set(projectName, items);
+}
+
+const projects = Array.from(projectMap.entries())
+  .map(([name, posts]) => ({
+    name,
+    posts: posts.sort((a, b) => {
+      const orderA = a.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+
+      if (orderA !== orderB) return orderA - orderB;
+      return a.data.pubDate.getTime() - b.data.pubDate.getTime();
+    }),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+---
+
+<BaseLayout
+  title={lang === 'ko' ? '프로젝트 | KJH Dev' : 'Projects | KJH Dev'}
+  description={
+    lang === 'ko'
+      ? '실제 서비스를 설계하고 개발하며 겪은 과정을 프로젝트 단위로 정리합니다.'
+      : 'Development journeys organized by real projects, from design to operation.'
+  }
+  lang={lang}
+>
+  <section>
+    <div class="category-page-header">
+      <h1>{lang === 'ko' ? '프로젝트' : 'Projects'}</h1>
+      <p>
+        {lang === 'ko'
+          ? '실제 서비스를 만들면서 진행한 설계, 구현, 문제 해결 과정을 하나의 흐름으로 기록합니다.'
+          : 'Follow design, implementation, troubleshooting, and operation as complete project stories.'}
+      </p>
+    </div>
+
+    {
+      projects.length === 0 ? (
+        <div class="post-card">
+          <h2 class="post-title">
+            {lang === 'ko' ? '프로젝트 시리즈 준비 중' : 'Project series coming soon'}
+          </h2>
+          <p class="post-description">
+            {lang === 'ko'
+              ? '기존 개발 기록을 프로젝트 단위의 연속된 글로 정리해 순차적으로 추가합니다.'
+              : 'Existing development records will be reorganized into project-based series.'}
+          </p>
+        </div>
+      ) : (
+        <div class="project-list">
+          {projects.map((project) => (
+            <section class="project-section">
+              <h2 class="section-title">{project.name}</h2>
+              <div class="post-list">
+                {project.posts.map((post) => {
+                  const slug = post.id.split('/').pop();
+
+                  return (
+                    <a class="post-card" href={`/${lang}/posts/${slug}/`}>
+                      <h3 class="post-title">{post.data.title}</h3>
+                      <p class="post-description">{post.data.description}</p>
+                      <div class="post-meta">
+                        {post.data.seriesOrder &&
+                          `${lang === 'ko' ? '시리즈 ' : 'Part '}${post.data.seriesOrder} · `}
+                        {post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US')}
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>
