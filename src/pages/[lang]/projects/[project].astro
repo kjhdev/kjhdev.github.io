@@ -31,11 +31,11 @@ const posts = (await getCollection('blog'))
       post.data.project === project.id
   )
   .sort((a, b) => {
-    const orderA = a.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
-    const orderB = b.data.seriesOrder ?? Number.MAX_SAFE_INTEGER;
+    const orderA = a.data.seriesOrder ?? Number.MIN_SAFE_INTEGER;
+    const orderB = b.data.seriesOrder ?? Number.MIN_SAFE_INTEGER;
 
-    if (orderA !== orderB) return orderA - orderB;
-    return a.data.pubDate.getTime() - b.data.pubDate.getTime();
+    if (orderA !== orderB) return orderB - orderA;
+    return b.data.pubDate.getTime() - a.data.pubDate.getTime();
   });
 ---
 
