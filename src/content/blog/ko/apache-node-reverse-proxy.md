@@ -47,6 +47,10 @@ https://example.com/api/status   → Node.js API
 
 ## Apache에서 필요한 기본 설정
 
+<!-- media:image:3 -->
+![Apache 리버스 프록시로 Node.js API 연결하기: 404 원인과 해결 방법](https://media.bubudev.com/images/kjhdev/apache-node-reverse-proxy/apache-node-reverse-proxy-1790932468128-2c14e3.webp)
+<!-- /media:image:3 -->
+
 가장 단순한 구성은 `ProxyPass`와 `ProxyPassReverse`를 함께 사용하는 것이다.
 
 ```apache
@@ -367,3 +371,4 @@ Apache와 Node.js를 연결하는 리버스 프록시 자체는 몇 줄의 설�
 - 여러 서버를 사용하는 환경이라면 모든 서버에 동일한 Apache 설정이 적용되었는지 확인한다.
 
 리버스 프록시 문제는 설정을 많이 바꾸는 것보다 요청이 지나가는 경로를 한 단계씩 검증하는 것이 가장 빠른 해결 방법이다.
+
