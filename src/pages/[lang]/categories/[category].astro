@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { categoryToSlug } from '../../../utils/category';
+import { extractFirstPostImage } from '../../../utils/postImage';
 
 export async function getStaticPaths() {
   const posts = await getCollection(
@@ -98,26 +99,43 @@ const posts = (await getCollection('blog'))
       {
         posts.map((post) => {
           const slug = post.id.split('/').pop();
+          const thumbnail =
+            post.data.postType !== 'project'
+              ? extractFirstPostImage(post.body)
+              : null;
 
           return (
             <a
-              class="post-card"
+              class:list={['post-card', { 'has-thumbnail': !!thumbnail }]}
               href={`/${lang}/posts/${slug}/`}
             >
-              <h2 class="post-title">
-                {post.data.title}
-              </h2>
+              {thumbnail && (
+                <div class="post-card-thumbnail" aria-hidden="true">
+                  <img
+                    src={thumbnail}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
 
-              <p class="post-description">
-                {post.data.description}
-              </p>
+              <div class="post-card-content">
+                <h2 class="post-title">
+                  {post.data.title}
+                </h2>
 
-              <div class="post-meta">
-                {
-                  post.data.pubDate.toLocaleDateString(
-                    lang === 'ko' ? 'ko-KR' : 'en-US'
-                  )
-                }
+                <p class="post-description">
+                  {post.data.description}
+                </p>
+
+                <div class="post-meta">
+                  {
+                    post.data.pubDate.toLocaleDateString(
+                      lang === 'ko' ? 'ko-KR' : 'en-US'
+                    )
+                  }
+                </div>
               </div>
             </a>
           );

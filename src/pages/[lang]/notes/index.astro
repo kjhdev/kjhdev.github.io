@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { categoryToSlug } from '../../../utils/category';
+import { extractFirstPostImage } from '../../../utils/postImage';
 
 export function getStaticPaths() {
   return [
@@ -85,14 +86,31 @@ const categories = Array.from(categoryMap.entries())
         <div class="post-list">
           {posts.map((post) => {
             const slug = post.id.split('/').pop();
+            const thumbnail = extractFirstPostImage(post.body);
 
             return (
-              <a class="post-card" href={`/${lang}/posts/${slug}/`}>
-                <h2 class="post-title">{post.data.title}</h2>
-                <p class="post-description">{post.data.description}</p>
-                <div class="post-meta">
-                  {post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US')}
-                  {post.data.category && ` · ${post.data.category}`}
+              <a
+                class:list={['post-card', { 'has-thumbnail': !!thumbnail }]}
+                href={`/${lang}/posts/${slug}/`}
+              >
+                {thumbnail && (
+                  <div class="post-card-thumbnail" aria-hidden="true">
+                    <img
+                      src={thumbnail}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                )}
+
+                <div class="post-card-content">
+                  <h2 class="post-title">{post.data.title}</h2>
+                  <p class="post-description">{post.data.description}</p>
+                  <div class="post-meta">
+                    {post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US')}
+                    {post.data.category && ` · ${post.data.category}`}
+                  </div>
                 </div>
               </a>
             );
