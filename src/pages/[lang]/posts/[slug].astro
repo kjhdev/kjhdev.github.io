@@ -22,6 +22,11 @@ const relatedPosts = allPosts
   .filter((item) => item.data.lang === lang && item.id !== post.id && item.data.category === post.data.category)
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
   .slice(0, 3);
+const categoryHref = post.data.postType === 'project' && post.data.project
+  ? `/${lang}/projects/${post.data.project}/`
+  : post.data.category
+    ? `/${lang}/notes/${categoryToSlug(post.data.category)}/`
+    : undefined;
 const formattedDate = post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', {
   year: 'numeric', month: 'long', day: 'numeric',
 });
@@ -38,7 +43,7 @@ const formattedDate = post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-K
   <article class="article">
     <header class="article-header">
       {post.data.category && (
-        <a class="article-category" href={`/${lang}/categories/${categoryToSlug(post.data.category)}/`}>
+        <a class="article-category" href={categoryHref}>
           {post.data.category}
         </a>
       )}

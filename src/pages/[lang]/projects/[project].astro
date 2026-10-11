@@ -43,6 +43,8 @@ const posts = (await getCollection('blog'))
   title={`${project.title[lang]} | KJH Dev`}
   description={project.description[lang]}
   lang={lang}
+  koUrl={`/ko/projects/${project.id}/`}
+  enUrl={`/en/projects/${project.id}/`}
 >
   <section>
     <a class="back-link" href={`/${lang}/projects/`}>
