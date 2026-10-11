@@ -1,6 +1,7 @@
 ---
 title: "Deploying to a Synology Private Server with a GitHub Self-hosted Runner"
 pubDate: "2026-09-22T07:36:00+09:00"
+updatedDate: "2026-10-11"
 description: "How I connected main-branch pushes to Docker deployments on an Ubuntu VM hosted by Synology, without making the private server a public SSH deployment target."
 category: "DevOps"
 tags: ["GitHub Actions", "Self-hosted Runner", "CI/CD", "Deployment", "Docker", "Synology"]
@@ -84,6 +85,21 @@ docker system df
 ```
 
 This was an important operational lesson: a Self-hosted Runner is not a managed deployment server. It is an agent executing CI/CD commands on infrastructure that I still have to maintain.
+
+## A server incident that changed how I check Runner failures
+
+On September 27, 2026, the server reached 100% disk usage on a filesystem of roughly 31GB. After storage was expanded, the root filesystem was reported at approximately 124GB, with about 13GB used at that point. These are **historical observations**, not a live capacity report.
+
+A self-hosted Runner is not a GitHub-managed virtual machine. It shares the server's disk, CPU, memory, and execution permissions. A failed Actions run therefore needs to be classified before changing application code.
+
+| Failure stage | First check | Likely class of issue |
+| --- | --- | --- |
+| Job never begins | Runner service and online status | Execution environment |
+| Image build fails | df -h, docker system df | Storage pressure or Docker cache |
+| Container fails to start | docker compose ps and logs | Configuration, ports, application |
+| Deployment succeeds but site fails | HTTP response and proxy route | Runtime or routing after deployment |
+
+On a host shared by multiple projects, I avoid restarting every container or deleting caches without first checking the affected service. The operational goal is to isolate one repository's deployment from unrelated workloads.
 
 ## Keep secrets out of the repository
 

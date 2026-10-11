@@ -1,6 +1,7 @@
 ---
 title: "MySQL nextval Concurrency: Fixing Duplicate IDs Under Load"
 pubDate: 2026-09-17T11:31:48+09:00
+updatedDate: "2026-10-11"
 description: "Reproduce duplicate IDs caused by a SELECT-then-UPDATE MySQL nextval implementation and compare AUTO_INCREMENT, SELECT FOR UPDATE, and LAST_INSERT_ID(expr) fixes."
 category: MySQL
 tags: ["MySQL", "Concurrency", "nextval", "AUTO_INCREMENT", "InnoDB"]
@@ -181,6 +182,18 @@ final sequence value = starting value + successful requests
 ```
 
 If the starting value is 100 and 50 requests succeed, the final sequence value should be 150 and all 50 returned values should be unique.
+
+## Three checks that matter in application code
+
+Changing the SQL statement alone may not eliminate a sequence-allocation problem when Spring Boot uses a connection pool.
+
+1. **Same connection:** incrementing the sequence and reading LAST_INSERT_ID() must use the same database connection. The returned value is connection-specific.
+2. **Existing sequence row:** check that the UPDATE actually affected the expected row. An absent sequence must not be treated as a successful allocation.
+3. **Transaction policy:** define the boundary between allocating a value and inserting the business record. Decide separately whether a gap after a failed transaction is acceptable.
+
+A meaningful concurrency test collects IDs returned by **overlapping requests** and checks for duplicates. Running 50 requests sequentially cannot reproduce the race. The 50-request example earlier is an expected-result scenario, not a claim that a real load test passed.
+
+For diagnosis in a test environment, CONNECTION_ID() can help verify connection affinity. Application code also needs to account for when the pool acquires and releases connections.
 
 ## Retrying DuplicateKeyException is only a fallback
 

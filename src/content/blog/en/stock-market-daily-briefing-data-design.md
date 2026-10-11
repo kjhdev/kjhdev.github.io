@@ -1,6 +1,7 @@
 ---
 title: "Building a Stock Market Daily Briefing System #2: Choosing What Data to Collect"
 pubDate: "2026-10-02"
+updatedDate: "2026-10-11"
 description: "How I defined the data scope for a Korean stock-market daily briefing by focusing on KOSPI and KOSDAQ indices, market breadth, investor flows, sectors, and trading-value rankings instead of collecting everything available."
 category: "Project"
 tags: ["Korean Stock Market", "Kiwoom REST API", "MySQL", "Python", "Data Pipeline", "Automation"]
@@ -231,6 +232,25 @@ The system should be able to check trading dates, row counts, value ranges, and 
 External APIs have request limits. A daily briefing that consumes unnecessary calls for low-value data will be difficult to operate reliably over time.
 
 The key distinction is between data that would be nice to have and data that is actually required for the briefing.
+
+## How I decide whether one trading day is publishable
+
+Separating the database tables does not make their values trustworthy by itself. Before generating a briefing, the system must establish that **all datasets refer to the same trading day and use the intended units**.
+
+An index endpoint may return the latest trading day while a ranking response is saved under another date. Each value can look plausible in isolation, but the combination no longer describes one day. The data contract therefore needs checks such as these:
+
+| Dataset | Pre-publishing check | If it fails |
+| --- | --- | --- |
+| KOSPI and KOSDAQ indices | Matching trading dates, complete OHLC values | Stop briefing generation |
+| Market breadth | Valid market and advancing/unchanged/declining counts | Investigate abnormal values |
+| Investor and sector flows | Monetary units, required fields and date | Do not aggregate or display |
+| Trading-value rankings | Nonempty list, expected rank count, no unintended duplicates | Hold the affected summary |
+
+A key distinction is **missing is not the same as zero**. A zero net-buying amount can be meaningful, but a missing API response cannot be silently converted into zero without changing the interpretation of the market.
+
+I also keep Office separate from QuantPick, which collects longer stock-level histories. The smaller briefing pipeline should not interfere with the other collector's API usage. I add a dataset only when it answers a reader question and can be validated consistently.
+
+The next stage is described in [part 3: stopping unsafe runs with preflight validation](/en/posts/stock-market-daily-briefing-preflight-validation/).
 
 ## Current briefing data flow
 

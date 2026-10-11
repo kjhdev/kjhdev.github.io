@@ -1,13 +1,14 @@
 ---
 title: "Connecting a Node.js API Behind Apache Reverse Proxy: Finding and Fixing 404 Errors"
 pubDate: "2026-10-02T14:51:00+09:00"
+updatedDate: "2026-10-11"
 description: "A practical guide to connecting Apache to a Node.js and Express API with ProxyPass, then isolating 404 errors across Apache, proxy path rewriting, and Express routing."
 category: "Web Development"
 tags: ["Apache", "Node.js", "Express", "Reverse Proxy", "ProxyPass", "Troubleshooting"]
 lang: "en"
 ---
 
-# Connecting a Node.js API Behind Apache Reverse Proxy: Finding and Fixing 404 Errors
+
 
 A common deployment pattern is to expose a single HTTPS address such as `https://example.com/api/...` while the actual API runs internally as a Node.js service.
 
@@ -245,6 +246,20 @@ This is useful for checking several things at once:
 This becomes especially important when two or more backend servers sit behind a load balancer.
 
 If one server has the proxy configuration and another does not, the same URL can appear to work intermittently: some requests succeed while others return 404.
+
+## Production case: only one backend returned 404
+
+In a two-server API environment, the same URL succeeded on some requests and returned HTTP 404 on others. At first the route appeared incorrect, but comparing the Apache configuration on each backend narrowed the problem.
+
+| Check | Working backend | Backend returning 404 |
+| --- | --- | --- |
+| Same API path | Handled | HTTP 404 |
+| Apache routing | Proxy path in place | Proxy path needed correction |
+| Resolution | Retain configuration | Correct path, validate syntax and apply configuration |
+
+The effective diagnostic order was **identify the responding backend → compare Apache forwarding paths → check the Node.js route**. When a load balancer distributes requests, repeatedly refreshing the public URL does not isolate which server is failing.
+
+The curl --resolve technique described earlier allows a specific backend to be tested while preserving the hostname. The examples use substituted hostnames and routes rather than publishing operational details.
 
 ## Identify which layer generated the 404
 

@@ -1,6 +1,7 @@
 ---
 title: "macOS에서 SDKMAN으로 Java 여러 버전 관리하기 - VS Code 프로젝트별 JDK 자동 전환"
 pubDate: 2026-09-08T09:24:00+09:00
+updatedDate: "2026-10-11"
 description: "macOS에서 SDKMAN으로 Java 17, Java 21 등 여러 JDK를 관리하고, .sdkmanrc와 VS Code Java 설정을 이용해 프로젝트를 열 때 각 프로젝트에 맞는 Java 버전을 사용하도록 구성하는 방법을 정리합니다."
 category: Java
 tags:
@@ -177,7 +178,7 @@ Using java version 21.0.8-tem
 
 ---
 
-# 6. 프로젝트별 Java 버전 지정하기
+## 6. 프로젝트별 Java 버전 지정하기
 
 SDKMAN은 프로젝트 루트에 있는 `.sdkmanrc` 파일을 이용해 프로젝트별 SDK 버전을 관리할 수 있습니다.
 
@@ -262,7 +263,7 @@ java=21.0.8-tem
 
 ---
 
-# 9. 프로젝트 디렉터리에 들어갈 때 Java 자동 변경하기
+## 9. 프로젝트 디렉터리에 들어갈 때 Java 자동 변경하기
 
 `.sdkmanrc` 파일만 생성했다고 해서 항상 자동 전환되는 것은 아닙니다.
 
@@ -358,7 +359,7 @@ Java 21 자동 적용
 
 ---
 
-# 11. 여기까지 했는데 VS Code는 왜 다른 Java를 사용할까?
+## 11. 여기까지 했는데 VS Code는 왜 다른 Java를 사용할까?
 
 여기서 주의할 점이 있습니다.
 
@@ -378,7 +379,7 @@ VS Code Java 확장이 반드시 Java 17을 프로젝트 JDK로 사용한다고 
 
 ---
 
-# 12. VS Code Extension Pack for Java 설치
+## 12. VS Code Extension Pack for Java 설치
 
 VS Code에서 Java 개발을 한다면 **Extension Pack for Java**를 설치합니다.
 
@@ -392,7 +393,7 @@ Extension Pack for Java
 
 ---
 
-# 13. SDKMAN으로 설치된 Java의 실제 경로 확인
+## 13. SDKMAN으로 설치된 Java의 실제 경로 확인
 
 SDKMAN이 관리하는 Java는 일반적으로 다음 아래에 설치됩니다.
 
@@ -430,7 +431,7 @@ sdk home java 21.0.8-tem
 
 ---
 
-# 14. VS Code에 여러 JDK 등록하기
+## 14. VS Code에 여러 JDK 등록하기
 
 VS Code에서 Command Palette를 엽니다.
 
@@ -509,7 +510,7 @@ Java 17 프로젝트를 사용한다고 해서 Language Server까지 Java 17로 
 
 ---
 
-# 16. Maven 프로젝트의 Java 버전도 맞춰주기
+## 16. Maven 프로젝트의 Java 버전도 맞춰주기
 
 VS Code는 Maven 또는 Gradle 프로젝트의 빌드 설정도 참고합니다.
 
@@ -553,7 +554,7 @@ VS Code java.configuration.runtimes
 
 ---
 
-# 17. Gradle 프로젝트라면
+## 17. Gradle 프로젝트라면
 
 Gradle 프로젝트에서는 Java Toolchain을 사용하는 것이 좋습니다.
 
@@ -593,7 +594,7 @@ java=21.0.8-tem
 
 ---
 
-# 18. 프로젝트마다 `.vscode/settings.json`까지 고정하는 방법
+## 18. 프로젝트마다 `.vscode/settings.json`까지 고정하는 방법
 
 개인 PC에서 여러 프로젝트를 확실하게 분리하고 싶다면 프로젝트 내부에 `.vscode/settings.json`을 둘 수도 있습니다.
 
@@ -650,7 +651,7 @@ Java 21 프로젝트:
 
 ---
 
-# 19. 추천 구성
+## 19. 추천 구성
 
 개인적으로 여러 Java 프로젝트를 동시에 관리한다면 다음 구성이 가장 단순합니다.
 
@@ -726,7 +727,7 @@ java=21.0.8-tem
 
 ---
 
-# 20. 실제 동작 확인
+## 20. 실제 동작 확인
 
 VS Code에서 프로젝트를 열고 새 터미널을 실행합니다.
 
@@ -770,7 +771,7 @@ Java: Configure Java Runtime
 
 ---
 
-# 21. `.sdkmanrc`에 적힌 Java가 설치되어 있지 않을 때
+## 21. `.sdkmanrc`에 적힌 Java가 설치되어 있지 않을 때
 
 Git에서 프로젝트를 새로 받은 경우 `.sdkmanrc`에 지정된 Java가 아직 설치되어 있지 않을 수 있습니다.
 
@@ -796,7 +797,7 @@ sdk env clear
 
 ---
 
-# 22. VS Code 터미널에서 `sdk` 명령을 찾지 못하는 경우
+## 22. VS Code 터미널에서 `sdk` 명령을 찾지 못하는 경우
 
 VS Code 내장 터미널에서 다음 오류가 발생할 수 있습니다.
 
@@ -827,7 +828,7 @@ VS Code의 기존 터미널도 종료한 뒤 새 터미널을 여는 것이 좋�
 
 ---
 
-# 23. 터미널은 Java 17인데 VS Code가 Java 21로 표시되는 경우
+## 23. 터미널은 Java 17인데 VS Code가 Java 21로 표시되는 경우
 
 이 현상은 반드시 오류는 아닙니다.
 
@@ -857,7 +858,7 @@ Java Language Server → Java 21
 
 ---
 
-# 24. 설정을 변경했는데 VS Code에 반영되지 않을 때
+## 24. 설정을 변경했는데 VS Code에 반영되지 않을 때
 
 Java 버전이나 `pom.xml`, Gradle 설정을 변경했는데 VS Code가 이전 상태를 계속 사용하는 경우 Command Palette에서 다음 명령을 사용할 수 있습니다.
 
@@ -875,7 +876,7 @@ Java: Clean Java Language Server Workspace
 
 ---
 
-# 25. 최종 구조
+## 25. 최종 구조
 
 Java 17 프로젝트:
 

@@ -1,6 +1,7 @@
 ---
 title: "GitHub Pages 블로그 Google SEO 설정 체크리스트"
 pubDate: 2026-09-08T14:24:04+09:00
+updatedDate: "2026-10-11"
 description: "Astro와 GitHub Pages로 운영하는 개발 블로그에서 Google 검색 노출을 위해 확인해야 할 title, description, canonical, sitemap, robots.txt, hreflang, Search Console 설정을 단계별로 정리합니다."
 category: SEO
 tags:
@@ -42,7 +43,7 @@ Google SEO를 처음 점검한다면 아래 항목부터 확인하는 것이 좋
 
 ---
 
-# 2. Astro의 `site` 주소부터 정확하게 설정
+## 2. Astro의 `site` 주소부터 정확하게 설정
 
 Astro에서 sitemap, canonical URL 등을 만들 때 기준이 되는 값이 `site`입니다.
 
@@ -77,7 +78,7 @@ https://www.example.com
 
 ---
 
-# 3. 포스트마다 고유한 `<title>` 사용
+## 3. 포스트마다 고유한 `<title>` 사용
 
 검색결과에서 제목은 사용자가 가장 먼저 확인하는 요소 중 하나입니다.
 
@@ -111,7 +112,7 @@ Java Java 설치 Java 버전 Java SDKMAN Java 개발
 
 ---
 
-# 4. `meta description`을 페이지별로 작성
+## 4. `meta description`을 페이지별로 작성
 
 각 블로그 포스트의 frontmatter에 `description`을 두고 layout에서 출력하는 구조가 관리하기 편합니다.
 
@@ -143,7 +144,7 @@ description은 검색결과의 스니펫 후보로 사용될 수 있습니다.
 
 ---
 
-# 5. canonical URL 설정
+## 5. canonical URL 설정
 
 같은 콘텐츠가 여러 URL로 접근 가능한 경우 검색엔진 입장에서는 어떤 URL을 대표 페이지로 봐야 하는지 판단해야 합니다.
 
@@ -182,7 +183,7 @@ sitemap의 URL
 
 ---
 
-# 6. sitemap 생성
+## 6. sitemap 생성
 
 포스트가 많아지면 검색로봇이 모든 페이지를 빠르게 발견하기 어려울 수 있습니다.
 
@@ -232,7 +233,7 @@ https://username.github.io/sitemap-index.xml
 
 ---
 
-# 7. `robots.txt` 확인
+## 7. `robots.txt` 확인
 
 GitHub Pages에서는 `public/robots.txt`를 만들어 두면 빌드 후 사이트 루트에 배포할 수 있습니다.
 
@@ -268,7 +269,7 @@ Disallow: /
 
 ---
 
-# 8. Google Search Console 등록
+## 8. Google Search Console 등록
 
 기술적인 SEO 설정을 마쳤다면 Google Search Console에 사이트를 등록하는 것이 좋습니다.
 
@@ -297,7 +298,7 @@ sitemap-0.xml
 
 ---
 
-# 9. 새 포스트는 URL 검사로 확인 가능
+## 9. 새 포스트는 URL 검사로 확인 가능
 
 포스트를 새로 작성했다고 해서 즉시 Google 검색결과에 나타나는 것은 아닙니다.
 
@@ -324,7 +325,7 @@ Google이 선택한 canonical은 무엇인가?
 
 ---
 
-# 10. 한글/영문 블로그라면 `hreflang` 설정
+## 10. 한글/영문 블로그라면 `hreflang` 설정
 
 같은 주제의 한국어와 영어 포스트를 함께 제공한다면 각 언어 페이지의 관계를 검색엔진에 알려주는 것이 좋습니다.
 
@@ -370,7 +371,7 @@ Astro에서는 한글/영문 URL이 실제로 존재할 때만 출력하는 방�
 
 ---
 
-# 11. Open Graph는 SEO와 별개로 같이 설정
+## 11. Open Graph는 SEO와 별개로 같이 설정
 
 Open Graph는 주로 링크를 SNS나 메신저에서 공유할 때 사용됩니다.
 
@@ -390,7 +391,7 @@ OG 태그를 설정했다고 Google 검색순위가 직접 올라가는 것으�
 
 ---
 
-# 12. 내부 링크도 중요
+## 12. 내부 링크도 중요
 
 검색로봇은 sitemap뿐 아니라 페이지 내 링크를 따라가며 다른 콘텐츠를 발견합니다.
 
@@ -417,7 +418,7 @@ OG 태그를 설정했다고 Google 검색순위가 직접 올라가는 것으�
 
 ---
 
-# 13. 이미지에는 `alt` 속성 사용
+## 13. 이미지에는 `alt` 속성 사용
 
 글에 스크린샷이나 다이어그램을 넣을 때 이미지 자체에만 정보를 담지 않는 것이 좋습니다.
 
@@ -434,7 +435,7 @@ OG 태그를 설정했다고 Google 검색순위가 직접 올라가는 것으�
 
 ---
 
-# 14. Astro + GitHub Pages 기준 최소 구성
+## 14. Astro + GitHub Pages 기준 최소 구성
 
 최소한 다음 정도가 갖춰지면 기본적인 기술 SEO 구조가 만들어집니다.
 
@@ -488,7 +489,7 @@ lang: ko
 
 ---
 
-# 15. 배포 후 직접 확인할 URL
+## 15. 배포 후 직접 확인할 URL
 
 SEO 설정은 소스만 보고 끝내지 말고 실제 배포 결과를 확인해야 합니다.
 
@@ -513,7 +514,7 @@ https://username.github.io/sitemap-index.xml
 
 ---
 
-# 16. 체크리스트
+## 16. 체크리스트
 
 GitHub Pages 블로그를 배포한 뒤 다음 항목을 하나씩 확인하면 됩니다.
 
@@ -536,7 +537,7 @@ GitHub Pages 블로그를 배포한 뒤 다음 항목을 하나씩 확인하면 
 
 ---
 
-# 마무리
+## 마무리
 
 GitHub Pages의 Google SEO는 별도의 서버가 없다고 해서 특별히 어려운 것은 아닙니다.
 

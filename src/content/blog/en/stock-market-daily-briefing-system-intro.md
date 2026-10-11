@@ -1,6 +1,7 @@
 ---
 title: "Building a Stock Market Daily Briefing System #1: Why I Started and the Overall Architecture"
 pubDate: "2026-09-29"
+updatedDate: "2026-10-11"
 description: "Why I started building a system that collects Korean stock-market data and automatically turns it into a daily briefing, and how Kiwoom REST API, MySQL, Docker, Astro, and GitHub Actions fit together."
 category: "Project"
 tags: ["Astro", "Python", "MySQL", "Docker", "Kiwoom REST API", "Automation"]
@@ -187,6 +188,20 @@ The main components currently used in the project are:
 | Service | office.bubudev.com |
 
 The important part is not each technology by itself, but how these pieces are connected into one repeatable workflow.
+
+## Three checkpoints I use to review an actual run
+
+To understand whether the architecture is working in practice, I separate the system into three checkpoints. This is more than a diagram: each checkpoint tells me where to investigate when a scheduled run does not produce a usable briefing.
+
+| Area | Evidence to inspect | Failure to distinguish |
+| --- | --- | --- |
+| API collection | Requested date, returned trading date, request count | Market holidays, rate limits, stale responses |
+| MySQL storage | Row counts, trading dates, validation status | Missing datasets and mixed trading dates |
+| Publishing | Prepared summary, build and deployment results | An unverified number reaching a published article |
+
+For example, a collector can finish without an exception and still return KOSPI and KOSDAQ data from different trading dates. That is not a valid single-day briefing. I therefore separate “the API responded” from “the result is ready to publish.”
+
+The following articles provide the concrete design decisions: [part 2: choosing the datasets](/en/posts/stock-market-daily-briefing-data-design/) explains what is collected, while [part 3: preflight validation](/en/posts/stock-market-daily-briefing-preflight-validation/) explains the conditions checked before starting a full batch.
 
 ## Current project status
 

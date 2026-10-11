@@ -1,6 +1,7 @@
 ---
 title: "Synology 내부 서버를 GitHub Actions Self-hosted Runner로 자동 배포한 과정"
 pubDate: "2026-09-22T07:36:00+09:00"
+updatedDate: "2026-10-11"
 description: "Synology VM의 Ubuntu 서버에서 여러 Docker 서비스를 운영하면서 외부 SSH 배포 대신 Self-hosted Runner로 main push와 배포를 연결한 실제 구성과 운영 시 주의점을 정리합니다."
 category: "DevOps"
 tags: ["GitHub Actions", "Self-hosted Runner", "CI/CD", "Deployment", "Docker", "Synology"]
@@ -93,6 +94,21 @@ docker system df
 Git 저장소에 `index.lock` 같은 비정상 상태가 남아 있거나 서버 재부팅 후 Runner/컨테이너 상태가 달라진 경우도 배포 실패 원인이 될 수 있다.
 
 즉 Self-hosted Runner는 "GitHub가 알아서 서버를 관리해 주는 서비스"가 아니라 **내 서버에서 CI/CD 명령을 실행하는 에이전트**다.
+
+## 실제 서버 장애에서 배운 Runner 운영 기준
+
+2026년 9월 27일 서버 작업 중 디스크 사용량이 31GB 규모에서 100%에 도달한 상황을 확인했다. 이후 디스크를 확장한 뒤에는 루트 파일시스템이 약 124GB로 표시됐고, 당시 사용량은 약 13GB였다. 이 수치는 **그날의 서버 상태 기록**이며 현재 상태를 뜻하지 않는다.
+
+Self-hosted Runner는 GitHub의 관리형 가상머신이 아니라 이 서버의 CPU·메모리·디스크와 실행 권한을 함께 사용한다. 따라서 GitHub Actions 화면에서 실패가 표시돼도 소스 문제인지 호스트 자원 문제인지 먼저 분리해야 한다.
+
+| 실패 구간 | 우선 확인 | 해석 |
+| --- | --- | --- |
+| 작업이 시작되지 않음 | Runner 서비스 상태, 온라인 여부 | 소스 빌드 이전의 실행 환경 문제 |
+| 이미지 빌드 실패 | df -h, docker system df | 디스크 부족이나 Docker 캐시 가능성 |
+| 컨테이너 기동 실패 | docker compose ps, 로그 | 환경 설정·포트·애플리케이션 문제 |
+| 배포 성공 후 화면 오류 | 서비스 응답, 프록시 연결 | 배포 명령 성공과 서비스 정상은 별개 |
+
+여러 프로젝트가 한 서버를 공유할 때는 무조건 캐시를 삭제하거나 전체 컨테이너를 재시작하지 않는다. 변경한 저장소의 배포 범위 안에서 원인을 확인하는 것이 다른 운영 서비스에 주는 영향을 줄인다.
 
 ## 환경변수와 비밀값은 저장소에 넣지 않는다
 

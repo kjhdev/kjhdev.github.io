@@ -1,13 +1,14 @@
 ---
 title: "Add Google AdSense to Astro GitHub Pages"
 pubDate: "2026-09-21T08:09:44+09:00"
+updatedDate: "2026-10-11"
 description: "Learn how to add Google AdSense to an Astro GitHub Pages blog, publish ads.txt at the site root, and verify the deployed HTML and crawler access."
 category: "Blog"
 tags: ["Astro", "GitHub Pages", "AdSense", "ads.txt", "SEO"]
 lang: "en"
 ---
 
-# Add Google AdSense to Astro GitHub Pages
+
 
 Connecting Google AdSense to an Astro site hosted on GitHub Pages mainly requires two pieces.
 

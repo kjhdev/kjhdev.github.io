@@ -30,6 +30,12 @@ const categoryHref = post.data.postType === 'project' && post.data.project
 const formattedDate = post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', {
   year: 'numeric', month: 'long', day: 'numeric',
 });
+const modifiedDate = post.data.updatedDate && post.data.updatedDate.getTime() !== post.data.pubDate.getTime()
+  ? post.data.updatedDate.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', {
+      year: 'numeric', month: 'long', day: 'numeric',
+    })
+  : null;
+const modifiedDateISO = post.data.updatedDate?.toISOString();
 ---
 
 <BaseLayout
@@ -48,7 +54,11 @@ const formattedDate = post.data.pubDate.toLocaleDateString(lang === 'ko' ? 'ko-K
         </a>
       )}
       <h1 class="article-title">{post.data.title}</h1>
-      <div class="article-date">{formattedDate}</div>
+      <div class="article-date">
+        <span>{lang === 'ko' ? '작성' : 'Published'}: <time datetime={post.data.pubDate.toISOString()}>{formattedDate}</time></span>
+        {modifiedDate && modifiedDateISO && <span> · {lang === 'ko' ? '수정' : 'Updated'}: <time datetime={modifiedDateISO}>{modifiedDate}</time></span>}
+      </div>
+      <div class="article-byline">{lang === 'ko' ? '작성자' : 'Author'}: <a href={`/${lang}/about/`}>KJH Dev</a></div>
       {post.data.tags.length > 0 && (
         <div class="article-tags">
           {post.data.tags.map((tag) => <span class="article-tag">#{tag}</span>)}

@@ -133,3 +133,6 @@ a { color: inherit; text-decoration: none; } a:hover { color: var(--accent); }
   .landing-feature-aside { border-left: 0; border-top: 1px solid var(--border); padding: 16px 0 0; }
   .landing-about { padding: 22px 20px; }
 }
+
+.article-byline { margin-top: 8px; font-size: 14px; color: var(--subtext); }
+.article-byline a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }

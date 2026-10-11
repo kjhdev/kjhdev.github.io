@@ -1,6 +1,7 @@
 ---
 title: "How to Make a GitHub Pages Blog Discoverable in Naver Search"
 pubDate: 2026-09-08T14:24:04+09:00
+updatedDate: "2026-10-11"
 description: "A practical guide to Naver SEO for an Astro and GitHub Pages blog, covering Naver Search Advisor, robots.txt, sitemaps, page titles, descriptions, canonical URLs, Open Graph, and indexing diagnostics."
 category: SEO
 tags:
@@ -23,7 +24,7 @@ This guide uses an **Astro + GitHub Pages** blog as the example.
 
 ---
 
-# 1. Naver does not require a traditional "search registration"
+## 1. Naver does not require a traditional "search registration"
 
 A common misunderstanding is that every site must be manually registered before it can appear in Naver Search.
 
@@ -42,7 +43,7 @@ For a blog that will be maintained over time, Search Advisor is worth configurin
 
 ---
 
-# 2. Add the site to Naver Search Advisor
+## 2. Add the site to Naver Search Advisor
 
 Sign in to Naver Search Advisor and add your production website.
 
@@ -64,7 +65,7 @@ Naver can provide verification methods such as an HTML file or meta tag. GitHub 
 
 ---
 
-# 3. Verify that the site is publicly reachable
+## 3. Verify that the site is publicly reachable
 
 A crawler cannot index a page it cannot access.
 
@@ -82,7 +83,7 @@ Fix GitHub Pages deployment or routing issues before working on SEO metadata.
 
 ---
 
-# 4. Check `robots.txt`
+## 4. Check `robots.txt`
 
 Naver's crawler reads robots.txt rules.
 
@@ -122,7 +123,7 @@ Also remember that robots.txt is not a security feature. Never rely on it to pro
 
 ---
 
-# 5. Generate a sitemap
+## 5. Generate a sitemap
 
 A sitemap is a standard way to tell crawlers which URLs are important.
 
@@ -159,7 +160,7 @@ Open the URL directly and confirm that the XML is accessible.
 
 ---
 
-# 6. Submit the sitemap to Naver Search Advisor
+## 6. Submit the sitemap to Naver Search Advisor
 
 After ownership verification, submit the sitemap in the webmaster tools.
 
@@ -185,7 +186,7 @@ GitHub Pages deployed
 
 ---
 
-# 7. Give every page a unique `<title>`
+## 7. Give every page a unique `<title>`
 
 Naver uses page titles as an important signal.
 
@@ -227,7 +228,7 @@ A useful title should:
 
 ---
 
-# 8. Write a useful `meta description`
+## 8. Write a useful `meta description`
 
 Each post should have its own summary.
 
@@ -257,7 +258,7 @@ This guide shows how to use SDKMAN and VS Code to automatically select a project
 
 ---
 
-# 9. Declare the representative URL with canonical
+## 9. Declare the representative URL with canonical
 
 If the same content can be reached through multiple URL variants, declare a preferred representative URL.
 
@@ -285,7 +286,7 @@ Keep canonical URLs, sitemap URLs, and internal links consistent.
 
 ---
 
-# 10. Add Open Graph metadata
+## 10. Add Open Graph metadata
 
 Open Graph is mainly used for social sharing, but Naver can also use this information when analyzing or presenting a page.
 
@@ -312,7 +313,7 @@ A common default image is fine as a fallback, but important articles may benefit
 
 ---
 
-# 11. Korean and English pages can coexist
+## 11. Korean and English pages can coexist
 
 A multilingual blog can separate URLs by language:
 
@@ -355,7 +356,7 @@ The important part is to provide real translated content rather than only transl
 
 ---
 
-# 12. Keep important information as text
+## 12. Keep important information as text
 
 Development blogs often contain terminal screenshots and configuration screenshots.
 
@@ -384,7 +385,7 @@ This is useful for accessibility as well as machine-readable page structure.
 
 ---
 
-# 13. Avoid keyword repetition
+## 13. Avoid keyword repetition
 
 Repeating the same search keyword many times is not a useful optimization technique.
 
@@ -412,7 +413,7 @@ Real troubleshooting experience usually creates more useful content than artific
 
 ---
 
-# 14. Use Search Advisor diagnostics
+## 14. Use Search Advisor diagnostics
 
 After adding the site, review the diagnostic reports in Naver Search Advisor.
 
@@ -439,7 +440,7 @@ The key is to verify how the crawler sees the deployed site rather than relying 
 
 ---
 
-# 15. Use the basic site check
+## 15. Use the basic site check
 
 Naver Search Advisor also provides tools for checking basic search-related site information.
 
@@ -457,7 +458,7 @@ This is useful after changing SEO-related markup on a GitHub Pages site.
 
 ---
 
-# 16. A new post may not appear immediately
+## 16. A new post may not appear immediately
 
 The deployment time and the search-result appearance time are different.
 
@@ -483,7 +484,7 @@ Check crawling and indexing status in Search Advisor first.
 
 ---
 
-# 17. Minimum Astro + GitHub Pages configuration
+## 17. Minimum Astro + GitHub Pages configuration
 
 `astro.config.mjs`:
 
@@ -538,7 +539,7 @@ Centralizing metadata in a shared layout means you do not need to manually rewri
 
 ---
 
-# 18. Naver SEO checklist
+## 18. Naver SEO checklist
 
 ```text
 [ ] Site loads correctly over HTTPS
@@ -562,7 +563,7 @@ Centralizing metadata in a shared layout means you do not need to manually rewri
 
 ---
 
-# Conclusion
+## Conclusion
 
 A GitHub Pages blog does not require a special Naver-only hosting setup.
 

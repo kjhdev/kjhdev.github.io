@@ -1,13 +1,14 @@
 ---
 title: "Auditing Privacy Policy Changes in Legacy PHP Sites"
 pubDate: "2026-09-24T07:31:25+09:00"
+updatedDate: "2026-10-11"
 description: "A developer-focused checklist for updating privacy notices in legacy PHP sites while verifying cookies, external links, contact forms, duplicated pages, and logging behavior."
 category: "Web Development"
 tags: ["PHP", "Privacy Policy", "Cookie", "Legacy", "Web Maintenance"]
 lang: "en"
 ---
 
-# Auditing Privacy Policy Changes in Legacy PHP Sites
+
 
 Updating a privacy policy on an older PHP site can look like a simple text-editing task. In practice, maintenance also requires checking whether the wording matches current site behavior, whether the same notice is duplicated across pages, and whether the edited file is actually connected to the user-facing screen.
 

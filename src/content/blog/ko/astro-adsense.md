@@ -1,13 +1,14 @@
 ---
 title: "Astro GitHub Pages에 Google AdSense 적용하기"
 pubDate: "2026-09-21T08:09:44+09:00"
+updatedDate: "2026-10-11"
 description: "Astro 기반 GitHub Pages 블로그에 Google AdSense 코드를 추가하고 ads.txt를 루트 경로에 배포한 뒤 정상 노출 여부를 확인하는 방법을 정리합니다."
 category: "Blog"
 tags: ["Astro", "GitHub Pages", "AdSense", "ads.txt", "SEO"]
 lang: "ko"
 ---
 
-# Astro GitHub Pages에 Google AdSense 적용하기
+
 
 Astro로 만든 GitHub Pages 블로그에 Google AdSense를 연결할 때는 크게 두 가지를 준비한다.
 

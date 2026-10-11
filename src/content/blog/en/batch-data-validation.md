@@ -1,6 +1,7 @@
 ---
 title: "What 2,555 Stocks Taught Me About Batch Data Validation"
 pubDate: "2026-09-23T07:30:40+09:00"
+updatedDate: "2026-10-11"
 description: "A practical validation design learned while loading two years of data for 2,555 stocks: coverage, date ranges, duplicates, consistency rules, source-data exceptions, and rerun safety."
 category: "Data Engineering"
 tags: ["Python", "MySQL", "Batch", "Data Validation", "ETL"]
@@ -113,6 +114,21 @@ final PASS / FAIL
 ```
 
 A single "success" message is not enough when the dataset later becomes an input to analysis.
+
+## What the recorded load size can and cannot establish
+
+Around September 25, 2026, the initial-load records showed 2,555 target symbols, 1,638,240 daily price rows, 1,436,259 investor-flow rows, and 1,440,709 program-trading rows. These are historical validation figures, not live counts.
+
+| Validation stage | Evidence | What a count alone can miss |
+| --- | --- | --- |
+| Total rows | Size of each loaded dataset | Missing symbols |
+| Symbol coverage | Compare loaded symbols with 2,555 targets | Symbols with zero rows |
+| Date range | First and last date per symbol | Incorrect expectations before listing |
+| Consistency | Duplicate keys, ranges and totals | Unit and aggregation issues |
+
+A newly listed symbol may legitimately lack a two-year history, while an established symbol missing a recent trading date requires investigation. A useful validator must distinguish these cases rather than reporting a single pass/fail based on row counts.
+
+The simplified uniqueness example earlier also assumes a single trading venue. If KRX, NXT, and SOR prices share one table, the duplicate-detection key must include the venue identifier. Otherwise separate, valid observations for the same symbol and date could be classified as duplicates.
 
 ## Propagate validation failure
 

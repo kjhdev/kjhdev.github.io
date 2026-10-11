@@ -1,6 +1,7 @@
 ---
 title: "Managing Multiple Java Versions on macOS with SDKMAN - Automatic JDK Selection per VS Code Project"
 pubDate: 2026-09-08T09:24:00+09:00
+updatedDate: "2026-10-11"
 description: "Learn how to manage Java 17, Java 21, and multiple JDKs on macOS with SDKMAN, then combine .sdkmanrc and VS Code Java runtime settings so each project automatically uses the correct Java version."
 category: Java
 tags:
@@ -177,7 +178,7 @@ For projects that require different Java versions, repeatedly running `sdk use` 
 
 ---
 
-# 6. Define a Java version per project
+## 6. Define a Java version per project
 
 SDKMAN can read a `.sdkmanrc` file from the project root and apply project-specific SDK versions.
 
@@ -262,7 +263,7 @@ Each project now records the Java version it expects.
 
 ---
 
-# 9. Automatically switch Java when entering a project
+## 9. Automatically switch Java when entering a project
 
 Creating `.sdkmanrc` alone does not necessarily enable automatic switching.
 
@@ -358,7 +359,7 @@ automatically use Java 21
 
 ---
 
-# 11. Why can VS Code still use a different Java version?
+## 11. Why can VS Code still use a different Java version?
 
 This is an important distinction.
 
@@ -378,7 +379,7 @@ To make the setup reliable, register the SDKMAN-managed JDKs in VS Code as well.
 
 ---
 
-# 12. Install Extension Pack for Java
+## 12. Install Extension Pack for Java
 
 For Java development in VS Code, install:
 
@@ -392,7 +393,7 @@ The pack includes the main Java language support, debugger, Maven integration, a
 
 ---
 
-# 13. Find the actual SDKMAN JDK paths
+## 13. Find the actual SDKMAN JDK paths
 
 SDKMAN normally installs Java versions under:
 
@@ -430,7 +431,7 @@ Use these paths in the VS Code configuration.
 
 ---
 
-# 14. Register multiple JDKs in VS Code
+## 14. Register multiple JDKs in VS Code
 
 Open the VS Code Command Palette:
 
@@ -509,7 +510,7 @@ A Java 17 project does not require the Language Server itself to run on Java 17.
 
 ---
 
-# 16. Match the Maven project Java version
+## 16. Match the Maven project Java version
 
 VS Code also reads Maven or Gradle project configuration.
 
@@ -551,7 +552,7 @@ VS Code java.configuration.runtimes
 
 ---
 
-# 17. For Gradle projects
+## 17. For Gradle projects
 
 For Gradle, Java Toolchains provide an explicit way to declare the project Java version.
 
@@ -591,7 +592,7 @@ java=21.0.8-tem
 
 ---
 
-# 18. Pinning a JDK with project-level `.vscode/settings.json`
+## 18. Pinning a JDK with project-level `.vscode/settings.json`
 
 If you want stronger separation on a personal development machine, you can also store a `.vscode/settings.json` file inside each project.
 
@@ -652,7 +653,7 @@ For personal development, it is convenient. For team projects, it is often clean
 
 ---
 
-# 19. Recommended configuration
+## 19. Recommended configuration
 
 For a macOS machine that regularly works with multiple Java projects, the following setup is simple and predictable.
 
@@ -728,7 +729,7 @@ With this arrangement, you no longer need to remember to change Java manually ev
 
 ---
 
-# 20. Verify the final configuration
+## 20. Verify the final configuration
 
 Open a project in VS Code and create a new integrated terminal.
 
@@ -772,7 +773,7 @@ This view shows the project runtime and the JDK installations recognized by VS C
 
 ---
 
-# 21. When the Java version in `.sdkmanrc` is not installed
+## 21. When the Java version in `.sdkmanrc` is not installed
 
 When you clone a project from Git, the Java version specified in `.sdkmanrc` may not be installed yet.
 
@@ -798,7 +799,7 @@ sdk env clear
 
 ---
 
-# 22. `sdk` is not found in the VS Code terminal
+## 22. `sdk` is not found in the VS Code terminal
 
 The VS Code integrated terminal may sometimes show:
 
@@ -829,7 +830,7 @@ Close existing VS Code terminals and open a new terminal afterward.
 
 ---
 
-# 23. The terminal says Java 17 but VS Code shows Java 21
+## 23. The terminal says Java 17 but VS Code shows Java 21
 
 This is not necessarily an error.
 
@@ -859,7 +860,7 @@ Actual project       → Java 17
 
 ---
 
-# 24. VS Code still shows the old configuration
+## 24. VS Code still shows the old configuration
 
 If you changed the Java version, `pom.xml`, or Gradle configuration but VS Code still uses stale project information, run:
 
@@ -877,7 +878,7 @@ VS Code will rebuild the Java project information.
 
 ---
 
-# 25. Final project layout
+## 25. Final project layout
 
 Java 17 project:
 

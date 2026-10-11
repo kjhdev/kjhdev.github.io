@@ -1,6 +1,7 @@
 ---
 title: "Building a Stock Market Daily Briefing System #3: Why I Added Preflight Validation Before Full Collection"
 pubDate: "2026-10-02"
+updatedDate: "2026-10-11"
 description: "Why the Korean stock-market collector runs preflight validation before full collection, checking authentication, the latest KOSPI trading date and index values, trading-value rankings, and API request usage before data is stored."
 category: "Project"
 tags: ["Korean Stock Market", "Kiwoom REST API", "Python", "Data Validation", "Preflight", "Automation"]
@@ -362,6 +363,26 @@ preflight succeeds
 ```
 
 This is easier to reason about than starting the largest job first and diagnosing problems afterward.
+
+## What one recorded preflight run actually established
+
+The following details come from the **preflight run performed on September 25, 2026**. They describe that historical run, not today's market values or the current state of the collector.
+
+| Check | Recorded observation | What it tells us |
+| --- | --- | --- |
+| Trading date used | 2026-09-23 | The run date and the returned trading date are distinct |
+| Trading-value ranking | 100 entries returned | The list endpoint provided a nonempty response |
+| API requests | 3 of 20 used | The cost of the early safety check was visible |
+
+This evidence establishes **basic connectivity and the shape of two important responses**. It does not prove that every field in those 100 rows, or every dataset later loaded by the full collector, was correct.
+
+When repeating the preflight, I compare three things:
+
+1. **Requested date versus returned trading date:** is the response tied to the intended market session?
+2. **API request usage:** has a previously small preflight suddenly started consuming more requests?
+3. **Database side effects:** has a read-only preflight unexpectedly changed operational row counts?
+
+These are criteria for interpreting a test rather than merely making it pass. If a later daily batch fails, its full data-consistency report should be compared separately with the preflight record.
 
 ## The main idea is to detect failure as early as possible
 

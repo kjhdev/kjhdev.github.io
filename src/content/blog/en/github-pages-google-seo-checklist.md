@@ -1,6 +1,7 @@
 ---
 title: "Google SEO Checklist for a GitHub Pages Blog"
 pubDate: 2026-09-08T14:24:04+09:00
+updatedDate: "2026-10-11"
 description: "A practical Google SEO checklist for an Astro and GitHub Pages blog, covering titles, meta descriptions, canonical URLs, sitemaps, robots.txt, hreflang, internal links, and Google Search Console."
 category: SEO
 tags:
@@ -42,7 +43,7 @@ Start with these items.
 
 ---
 
-# 2. Configure Astro's `site` value correctly
+## 2. Configure Astro's `site` value correctly
 
 Astro uses the `site` setting as the base for features such as sitemap generation and absolute URLs.
 
@@ -77,7 +78,7 @@ An incorrect `site` value can produce incorrect sitemap or canonical URLs, so it
 
 ---
 
-# 3. Use a unique `<title>` for every post
+## 3. Use a unique `<title>` for every post
 
 The page title is one of the most visible pieces of information in search results.
 
@@ -111,7 +112,7 @@ Think of the title as a useful description for a reader, not a container for rep
 
 ---
 
-# 4. Add a page-specific meta description
+## 4. Add a page-specific meta description
 
 A convenient pattern is to keep a `description` field in each Markdown file and render it in the shared layout.
 
@@ -141,7 +142,7 @@ A good description should:
 
 ---
 
-# 5. Add a canonical URL
+## 5. Add a canonical URL
 
 The same content can sometimes be accessible through multiple URLs.
 
@@ -180,7 +181,7 @@ Avoid sending mixed signals by linking to different variants of the same page.
 
 ---
 
-# 6. Generate a sitemap
+## 6. Generate a sitemap
 
 As the number of posts grows, a sitemap gives search crawlers a clear list of important URLs.
 
@@ -224,7 +225,7 @@ The goal is to provide the representative URLs you actually want indexed.
 
 ---
 
-# 7. Check `robots.txt`
+## 7. Check `robots.txt`
 
 In an Astro GitHub Pages project, you can put `robots.txt` in the `public` directory.
 
@@ -256,7 +257,7 @@ Also remember that `robots.txt` is not an access-control mechanism. Do not use i
 
 ---
 
-# 8. Add the site to Google Search Console
+## 8. Add the site to Google Search Console
 
 Once the technical setup is in place, add the site to Google Search Console.
 
@@ -281,7 +282,7 @@ or another sitemap path produced by your configuration.
 
 ---
 
-# 9. Inspect newly published URLs
+## 9. Inspect newly published URLs
 
 Publishing a post does not mean it will immediately appear in Google Search.
 
@@ -304,7 +305,7 @@ You can request indexing when appropriate, but an indexing request does not guar
 
 ---
 
-# 10. Use `hreflang` for Korean and English versions
+## 10. Use `hreflang` for Korean and English versions
 
 If the blog provides both Korean and English versions of the same post, connect them with language annotations.
 
@@ -348,7 +349,7 @@ Do not generate a language alternate URL for a page that does not exist.
 
 ---
 
-# 11. Configure Open Graph separately
+## 11. Configure Open Graph separately
 
 Open Graph primarily controls how links look when shared through social platforms and messaging apps.
 
@@ -370,7 +371,7 @@ For images, an absolute public URL is usually safer than a path that cannot be r
 
 ---
 
-# 12. Build useful internal links
+## 12. Build useful internal links
 
 Search crawlers discover pages through links as well as sitemaps.
 
@@ -397,7 +398,7 @@ At minimum, a post should normally be reachable from:
 
 ---
 
-# 13. Use meaningful image `alt` text
+## 13. Use meaningful image `alt` text
 
 When an article includes screenshots or diagrams, do not put all important information only inside the image.
 
@@ -416,7 +417,7 @@ Do not repeat keywords just for SEO.
 
 ---
 
-# 14. Minimum Astro + GitHub Pages setup
+## 14. Minimum Astro + GitHub Pages setup
 
 A practical baseline looks like this.
 
@@ -470,7 +471,7 @@ lang: en
 
 ---
 
-# 15. Verify the deployed output
+## 15. Verify the deployed output
 
 Do not stop after checking the source code.
 
@@ -497,7 +498,7 @@ If the markup exists only in your source but is missing from the built page, sea
 
 ---
 
-# 16. Final checklist
+## 16. Final checklist
 
 ```text
 [ ] Site works over HTTPS
@@ -518,7 +519,7 @@ If the markup exists only in your source but is missing from the built page, sea
 
 ---
 
-# Conclusion
+## Conclusion
 
 Technical SEO for GitHub Pages is not fundamentally different from SEO on a traditional hosted site.
 
