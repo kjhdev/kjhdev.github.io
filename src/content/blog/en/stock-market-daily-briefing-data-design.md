@@ -33,6 +33,10 @@ When reviewing a completed trading day, I mainly want to know five things.
 
 Once these questions were fixed, the required datasets became much clearer.
 
+<!-- media:image:11 -->
+![Building a Stock Market Daily Briefing System #2: Choosing What Data to Collect](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-data-design/02-data-collection-en-1791774169444-3ec9e8.webp)
+<!-- /media:image:11 -->
+
 <!-- media:image:8 -->
 ![주식시장 데일리 브리핑 시스템 만들기 #2: 어떤 데이터를 수집할 것인가](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-data-design/chatgpt-2026-10-12-11_07_22-2-1791771052445-4b9da7.webp)
 <!-- /media:image:8 -->
@@ -289,4 +293,5 @@ In automated collection, one of the more dangerous failures is not an API reques
 For that reason, I added a `preflight` stage that makes only a small number of API calls and checks the trading date and key values before the full collection begins.
 
 The next post will cover **why the system performs preflight validation before a full collection run**, including what is checked and how invalid data is prevented from reaching the publishing pipeline.
+
 
