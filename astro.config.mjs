@@ -9,6 +9,7 @@ export default defineConfig({
       // 중복·단순 목록용 보조 아카이브는 검색 대상에서 제외한다.
       filter: (page) => {
         const path = new URL(page).pathname;
+        if (path === '/ko/' || path === '/ko') return false;
         if (/^\/(ko|en)\/categories(?:\/|$)/.test(path)) return false;
         if (/^\/(ko|en)\/notes\/[^/]+\/?$/.test(path)) return false;
         return true;

@@ -136,3 +136,18 @@ a { color: inherit; text-decoration: none; } a:hover { color: var(--accent); }
 
 .article-byline { margin-top: 8px; font-size: 14px; color: var(--subtext); }
 .article-byline a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+/* 본문 탐색: 모바일에서도 이전/다음 글을 명확히 구분한다. */
+.article-breadcrumb { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 22px; font-size: 13px; color: var(--subtext); }
+.article-breadcrumb a { color: var(--accent); text-decoration: none; }
+.article-breadcrumb a:hover { text-decoration: underline; }
+.series-navigation { margin-top: 46px; padding-top: 26px; border-top: 1px solid var(--border); }
+.series-navigation-all { display: inline-block; margin-bottom: 16px; color: var(--accent); font-size: 14px; font-weight: 600; }
+.series-navigation-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.series-navigation-links a { display: block; min-width: 0; border: 1px solid var(--border); padding: 16px; border-radius: 10px; background: var(--bg); }
+.series-navigation-links a:hover { border-color: var(--accent); color: inherit; }
+.series-navigation-links a span { display: block; color: var(--accent); font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.series-navigation-links a strong { display: block; line-height: 1.5; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .series-navigation-links { grid-template-columns: minmax(0, 1fr); }
+}

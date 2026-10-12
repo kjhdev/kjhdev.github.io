@@ -1,87 +1,111 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { projects } from '../../data/projects';
 import { extractFirstPostImage } from '../../utils/postImage';
 
 const posts = (await getCollection('blog'))
   .filter((post) => post.data.lang === 'en' && !post.data.draft)
-  .sort(
-    (a, b) =>
-      b.data.pubDate.getTime() - a.data.pubDate.getTime()
-  );
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+const latestNotes = posts.filter((post) => post.data.postType !== 'project').slice(0, 5);
+const featuredProject = projects[0];
+const projectPosts = featuredProject
+  ? posts.filter((post) => post.data.postType === 'project' && post.data.project === featuredProject.id)
+      .sort((a, b) => (a.data.seriesOrder ?? 0) - (b.data.seriesOrder ?? 0))
+  : [];
 ---
 
 <BaseLayout
-  title="KJH Dev"
-  description="A development blog about programming, troubleshooting, and software development."
+  title="KJH Dev | Projects and Engineering Notes"
+  description="Engineering notes from real services: architecture, troubleshooting, fixes, and verification for projects built and operated by KJH Dev."
   lang="en"
-  koUrl="/ko/"
+  koUrl="/"
   enUrl="/en/"
 >
-  <section class="hero">
-    <h1>KJH Dev</h1>
-
+  <section class="hero landing-hero">
+    <p class="landing-eyebrow">KJH DEV · DEVELOPMENT JOURNAL</p>
+    <h1>Projects built and<br />problems solved</h1>
     <p>
-      Development experiences, technical notes, and solutions
-      learned while building software.
+      From Spring Boot, Node.js, MySQL, and Flutter to running servers.
+      This blog documents problems encountered while building and operating services, including their causes, fixes, and verification steps.
     </p>
+    <div class="landing-actions">
+      <a class="landing-primary-link" href="/en/projects/">Explore projects <span aria-hidden="true">→</span></a>
+      <a class="landing-secondary-link" href="/en/notes/">Browse development notes <span aria-hidden="true">→</span></a>
+    </div>
   </section>
 
-  <section>
-    <h2 class="section-title">Recent Posts</h2>
-
-    {
-      posts.length === 0 ? (
-        <p>No posts yet.</p>
-      ) : (
-        <div class="post-list">
-          {
-            posts.map((post) => {
-              const slug = post.id.split('/').pop();
-              const thumbnail =
-                post.data.postType !== 'project'
-                  ? extractFirstPostImage(post.body)
-                  : null;
-
-              return (
-                <a
-                  class:list={['post-card', { 'has-thumbnail': !!thumbnail }]}
-                  href={`/en/posts/${slug}/`}
-                >
-                  {thumbnail && (
-                    <div class="post-card-thumbnail" aria-hidden="true">
-                      <img
-                        src={thumbnail}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                  )}
-
-                  <div class="post-card-content">
-                    <h3 class="post-title">
-                      {post.data.title}
-                    </h3>
-
-                    <p class="post-description">
-                      {post.data.description}
-                    </p>
-
-                    <div class="post-meta">
-                      {post.data.pubDate.toLocaleDateString('en-US')}
-                      {
-                        post.data.category &&
-                        ` · ${post.data.category}`
-                      }
-                    </div>
-                  </div>
-                </a>
-              );
-            })
-          }
+  {featuredProject && (
+    <section class="landing-section" aria-labelledby="featured-project-title">
+      <div class="landing-section-heading">
+        <h2 id="featured-project-title">Ongoing project</h2>
+        <a href="/en/projects/">All projects <span aria-hidden="true">→</span></a>
+      </div>
+      <a class="landing-feature" href={`/en/projects/${featuredProject.id}/`}>
+        <div class="landing-feature-content">
+          <span class="project-status">{featuredProject.status.en}</span>
+          <h3>{featuredProject.title.en}</h3>
+          <p>{featuredProject.description.en}</p>
+          <span class="landing-feature-link">View {projectPosts.length} development logs <span aria-hidden="true">→</span></span>
         </div>
-      )
-    }
+        <div class="landing-feature-aside">
+          <strong>What this project covers</strong>
+          <p>Designing data collection, validating results, storing data, and automating delivery, with operational problems explained alongside implementation.</p>
+        </div>
+      </a>
+      {projectPosts.length > 0 && (
+        <div class="landing-series">
+          <h3>Project development log</h3>
+          <ol>
+            {projectPosts.slice(0, 3).map((post) => (
+              <li>
+                <a href={`/en/posts/${post.id.split('/').pop()}/`}>{post.data.title}</a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </section>
+  )}
+
+  <section class="landing-section" aria-labelledby="latest-notes-title">
+    <div class="landing-section-heading">
+      <h2 id="latest-notes-title">Recent development notes</h2>
+      <a href="/en/notes/">All notes <span aria-hidden="true">→</span></a>
+    </div>
+    {latestNotes.length === 0 ? (
+      <p>No development notes have been published yet.</p>
+    ) : (
+      <div class="post-list">
+        {latestNotes.map((post) => {
+          const slug = post.id.split('/').pop();
+          const thumbnail = extractFirstPostImage(post.body);
+          return (
+            <a class:list={['post-card', { 'has-thumbnail': !!thumbnail }]} href={`/en/posts/${slug}/`}>
+              {thumbnail && (
+                <div class="post-card-thumbnail" aria-hidden="true">
+                  <img src={thumbnail} alt="" loading="lazy" decoding="async" />
+                </div>
+              )}
+              <div class="post-card-content">
+                <h3 class="post-title">{post.data.title}</h3>
+                <p class="post-description">{post.data.description}</p>
+                <div class="post-meta">{post.data.pubDate.toLocaleDateString('en-US')} {post.data.category && ` · ${post.data.category}`}</div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    )}
+  </section>
+
+  <section class="landing-about" aria-labelledby="landing-about-title">
+    <h2 id="landing-about-title">What does this blog document?</h2>
+    <p>
+      The focus is not just on how to use a tool, but on the environment where a problem occurred and how it was diagnosed and resolved.
+      Configurations, code examples, and verification criteria are included so the material remains useful for future troubleshooting.
+    </p>
+    <a href="/en/about/">About this blog <span aria-hidden="true">→</span></a>
   </section>
 </BaseLayout>

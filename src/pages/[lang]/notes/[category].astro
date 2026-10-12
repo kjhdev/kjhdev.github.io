@@ -64,6 +64,19 @@ const posts = allNotes
   .filter((post) => post.data.category === categoryName)
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 
+// 현재 카테고리의 언어별 목록이 실제로 존재할 때만 전환 링크를 노출한다.
+const counterpartLang = lang === 'ko' ? 'en' : 'ko';
+const hasCounterpart = (await getCollection('blog')).some(
+  (post) => post.data.lang === counterpartLang
+    && !post.data.draft
+    && post.data.postType !== 'project'
+    && categoryToSlug(post.data.category ?? '') === categoryToSlug(categoryName)
+);
+const categoryUrl = `/${lang}/notes/${categoryToSlug(categoryName)}/`;
+const counterpartUrl = hasCounterpart
+  ? `/${counterpartLang}/notes/${categoryToSlug(categoryName)}/`
+  : undefined;
+
 const categoryMap = new Map<string, number>();
 for (const post of allNotes) {
   const category = post.data.category;
@@ -88,6 +101,8 @@ const categories = Array.from(categoryMap.entries())
       : `Development notes about troubleshooting, configuration, and practical experience in ${categoryName}.`
   }
   lang={lang}
+  koUrl={lang === 'ko' ? categoryUrl : counterpartUrl}
+  enUrl={lang === 'en' ? categoryUrl : counterpartUrl}
   robots="noindex, follow"
 >
   <section>

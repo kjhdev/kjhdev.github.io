@@ -1,85 +1,17 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { extractFirstPostImage } from '../../utils/postImage';
-
-const posts = (await getCollection('blog'))
-  .filter((post) => post.data.lang === 'ko' && !post.data.draft)
-  .sort(
-    (a, b) =>
-      b.data.pubDate.getTime() - a.data.pubDate.getTime()
-  );
+// 이전 한국어 홈 주소를 대표 주소(/)로 이동한다.
+// GitHub Pages는 서버측 301 redirect를 지원하지 않으므로 즉시 meta refresh를 사용한다.
 ---
-
-<BaseLayout
-  title="KJH Dev"
-  description="개발 경험과 기술을 기록하는 개발 블로그입니다."
-  lang="ko"
-  koUrl="/ko/"
-  enUrl="/en/"
->
-  <section class="hero">
-    <h1>KJH Dev</h1>
-    <p>
-      개발하면서 경험한 내용과 문제 해결 과정을 기록합니다.
-    </p>
-  </section>
-
-  <section>
-    <h2 class="section-title">최근 글</h2>
-
-    {
-      posts.length === 0 ? (
-        <p>아직 등록된 글이 없습니다.</p>
-      ) : (
-        <div class="post-list">
-          {
-            posts.map((post) => {
-              const slug = post.id.split('/').pop();
-              const thumbnail =
-                post.data.postType !== 'project'
-                  ? extractFirstPostImage(post.body)
-                  : null;
-
-              return (
-                <a
-                  class:list={['post-card', { 'has-thumbnail': !!thumbnail }]}
-                  href={`/ko/posts/${slug}/`}
-                >
-                  {thumbnail && (
-                    <div class="post-card-thumbnail" aria-hidden="true">
-                      <img
-                        src={thumbnail}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                  )}
-
-                  <div class="post-card-content">
-                    <h3 class="post-title">
-                      {post.data.title}
-                    </h3>
-
-                    <p class="post-description">
-                      {post.data.description}
-                    </p>
-
-                    <div class="post-meta">
-                      {post.data.pubDate.toLocaleDateString('ko-KR')}
-                      {
-                        post.data.category &&
-                        ` · ${post.data.category}`
-                      }
-                    </div>
-                  </div>
-                </a>
-              );
-            })
-          }
-        </div>
-      )
-    }
-  </section>
-</BaseLayout>
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0;url=/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>한국어 홈으로 이동 | KJH Dev</title>
+    <link rel="canonical" href="https://kjhdev.github.io/" />
+  </head>
+  <body>
+    <p>한국어 홈페이지가 <a href="/">새 주소(/)로 이동했습니다</a>.</p>
+  </body>
+</html>

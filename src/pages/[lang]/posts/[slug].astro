@@ -18,10 +18,37 @@ const slug = post.id.split('/').pop()!;
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 const koPost = allPosts.find((item) => item.data.lang === 'ko' && item.id.split('/').pop() === slug);
 const enPost = allPosts.find((item) => item.data.lang === 'en' && item.id.split('/').pop() === slug);
-const relatedPosts = allPosts
-  .filter((item) => item.data.lang === lang && item.id !== post.id && item.data.category === post.data.category)
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-  .slice(0, 3);
+// 시리즈는 실제 읽는 순서에 맞춰 이동하고, 일반 글은 주제·기술 태그 기준으로 연결한다.
+const projectSeries = post.data.postType === 'project' && post.data.project
+  ? allPosts
+      .filter((item) =>
+        item.data.lang === lang &&
+        item.data.postType === 'project' &&
+        item.data.project === post.data.project
+      )
+      .sort((a, b) =>
+        (a.data.seriesOrder ?? Number.MAX_SAFE_INTEGER) - (b.data.seriesOrder ?? Number.MAX_SAFE_INTEGER)
+        || a.data.pubDate.getTime() - b.data.pubDate.getTime()
+      )
+  : [];
+const seriesIndex = projectSeries.findIndex((item) => item.id === post.id);
+const previousProjectPost = seriesIndex > 0 ? projectSeries[seriesIndex - 1] : null;
+const nextProjectPost = seriesIndex >= 0 && seriesIndex < projectSeries.length - 1
+  ? projectSeries[seriesIndex + 1] : null;
+
+const relatedPosts = post.data.postType === 'project'
+  ? []
+  : allPosts
+      .filter((item) => item.data.lang === lang && item.id !== post.id && item.data.postType !== 'project')
+      .map((item) => ({
+        item,
+        score: (post.data.category && item.data.category === post.data.category ? 3 : 0)
+          + item.data.tags.filter((tag) => post.data.tags.includes(tag)).length,
+      }))
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score || b.item.data.pubDate.getTime() - a.item.data.pubDate.getTime())
+      .slice(0, 3)
+      .map(({ item }) => item);
 const categoryHref = post.data.postType === 'project' && post.data.project
   ? `/${lang}/projects/${post.data.project}/`
   : post.data.category
@@ -47,6 +74,21 @@ const modifiedDateISO = post.data.updatedDate?.toISOString();
   enUrl={enPost ? `/en/posts/${slug}/` : undefined}
 >
   <article class="article">
+    <nav class="article-breadcrumb" aria-label={lang === 'ko' ? '현재 위치' : 'Breadcrumb'}>
+      <a href={lang === 'ko' ? '/' : '/en/'}>{lang === 'ko' ? '홈' : 'Home'}</a>
+      <span aria-hidden="true">›</span>
+      <a href={post.data.postType === 'project' ? `/${lang}/projects/` : `/${lang}/notes/`}>
+        {post.data.postType === 'project'
+          ? (lang === 'ko' ? '프로젝트' : 'Projects')
+          : (lang === 'ko' ? '개발노트' : 'Notes')}
+      </a>
+      {post.data.postType === 'project' && categoryHref && (
+        <>
+          <span aria-hidden="true">›</span>
+          <a href={categoryHref}>{lang === 'ko' ? '시리즈 전체보기' : 'Full series'}</a>
+        </>
+      )}
+    </nav>
     <header class="article-header">
       {post.data.category && (
         <a class="article-category" href={categoryHref}>
@@ -66,6 +108,27 @@ const modifiedDateISO = post.data.updatedDate?.toISOString();
       )}
     </header>
     <div class="article-body"><Content /></div>
+    {projectSeries.length > 1 && post.data.project && (
+      <nav class="series-navigation" aria-label={lang === 'ko' ? '프로젝트 시리즈 이동' : 'Project series navigation'}>
+        <a class="series-navigation-all" href={`/${lang}/projects/${post.data.project}/`}>
+          {lang === 'ko' ? '프로젝트 전체 목차' : 'View the full project series'}
+        </a>
+        <div class="series-navigation-links">
+          {previousProjectPost ? (
+            <a href={`/${lang}/posts/${previousProjectPost.id.split('/').pop()}/`}>
+              <span>{lang === 'ko' ? '← 이전 글' : '← Previous'}</span>
+              <strong>{previousProjectPost.data.title}</strong>
+            </a>
+          ) : <span aria-hidden="true"></span>}
+          {nextProjectPost ? (
+            <a href={`/${lang}/posts/${nextProjectPost.id.split('/').pop()}/`}>
+              <span>{lang === 'ko' ? '다음 글 →' : 'Next →'}</span>
+              <strong>{nextProjectPost.data.title}</strong>
+            </a>
+          ) : <span aria-hidden="true"></span>}
+        </div>
+      </nav>
+    )}
     {relatedPosts.length > 0 && (
       <aside class="related-posts" aria-label={lang === 'ko' ? '관련 글' : 'Related posts'}>
         <h2>{lang === 'ko' ? '같이 보면 좋은 글' : 'Related posts'}</h2>
