@@ -31,6 +31,10 @@ seriesOrder: 3
 
 현재 흐름을 단순화하면 다음과 같다.
 
+<!-- media:image:9 -->
+![주식시장 데일리 브리핑 시스템 만들기 #3: 전체 수집 전에 preflight 검증을 두는 이유](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-preflight-validation/chatgpt-2026-10-12-11_07_23-3-1791771087609-e0e492.webp)
+<!-- /media:image:9 -->
+
 ```text
 preflight 실행
 ↓
@@ -420,3 +424,4 @@ preflight를 통과했다고 해서 데이터 수집이 끝난 것은 아니다.
 실제로 더 많은 오류는 여러 API의 결과를 DB에 저장한 뒤 서로 비교할 때 발견된다. 단순히 데이터가 존재하는지뿐 아니라 건수, 값의 범위, 단위, 시장 구분까지 확인해야 한다.
 
 다음 글에서는 **「수집한 주식시장 데이터가 정말 정상인지 어떻게 검증할 것인가」**를 주제로 `validate_daily_data()`에 넣은 정합성 검사와 잘못된 데이터가 브리핑으로 넘어가지 않도록 만든 구조를 정리할 예정이다.
+
