@@ -31,6 +31,10 @@ Its job is to answer a simpler question: **is the basic collection environment h
 
 The current flow can be simplified as follows.
 
+<!-- media:image:12 -->
+![Building a Stock Market Daily Briefing System #3: Why I Added Preflight Validation Before Full Collection](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-preflight-validation/03-preflight-validation-en-1791774200462-e0fe64.webp)
+<!-- /media:image:12 -->
+
 <!-- media:image:9 -->
 ![주식시장 데일리 브리핑 시스템 만들기 #3: 전체 수집 전에 preflight 검증을 두는 이유](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-preflight-validation/chatgpt-2026-10-12-11_07_23-3-1791771087609-e0e492.webp)
 <!-- /media:image:9 -->
@@ -413,4 +417,5 @@ Passing preflight still does not prove that the complete daily dataset is correc
 Many issues only become visible after several API results have been stored and compared with one another. At that point, row counts, value ranges, units, market classifications, and ranking completeness all need to be checked.
 
 The next post will cover **how the system validates collected stock-market data after storage**, focusing on the consistency rules inside `validate_daily_data()` and how invalid data is prevented from reaching the daily briefing.
+
 
