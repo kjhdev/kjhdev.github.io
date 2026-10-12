@@ -11,6 +11,7 @@ tags:
   - VS Code
   - Docker
 lang: en
+updatedDate: "2026-10-12"
 ---
 
 The same Spring Boot project can connect to MySQL correctly on one machine and fail on another with an error like:
@@ -34,7 +35,7 @@ spring:
 with a project-level `.env` file:
 
 ```env
-DB_URL=jdbc:mysql://db.example.com:3306/app?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+DB_URL="jdbc:mysql://db.example.com:3306/app?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
 DB_USERNAME=dev
 DB_PASSWORD=example-password
 ```
@@ -220,6 +221,50 @@ then investigate:
 - DB user permissions,
 - database name,
 - SSL options.
+
+## Trace where the variable disappears
+
+The JDBC URL and error message in this article are **illustrative diagnostic examples**. Do not publish your real database hostname or credentials in logs or screenshots.
+
+| Launch method | How the variable reaches Java | Check first |
+|---|---|---|
+| Gradle/Maven in a terminal | Exported shell environment | `printenv DB_URL` |
+| VS Code Run/Debug | Java launch configuration | `envFile` or `env` in `launch.json` |
+| Docker Compose | Service `environment` or `env_file` | Environment inside the container |
+| Deployed JAR | Process manager environment | systemd or deployment script |
+
+Distinguish **a missing property** from **a failed database connection**:
+
+- If the driver still sees the literal `DB_URL` placeholder, check configuration resolution.
+- If the actual `jdbc:mysql:` URL is present but the connection is refused, check MySQL and the network path.
+- If the response is `Access denied for user`, check the database account and grants.
+
+### Check presence without printing secrets
+
+`env | grep '^DB_'` may expose a database password in your terminal output. It is safer to check only whether the key has a non-empty value.
+
+```bash
+test -n "$DB_URL" && echo "DB_URL_SET" || echo "DB_URL_MISSING"
+docker compose exec api sh -c 'test -n "$DB_URL" && echo DB_URL_SET || echo DB_URL_MISSING'
+```
+
+The second example assumes an existing, running `api` service. Avoid including raw JDBC URLs and credentials in published screenshots.
+
+### Take care when sourcing .env files
+
+Wrap a JDBC URL containing `&` in quotes so a shell does not interpret the ampersand as command syntax. `source` **executes the file as shell code**: use it only with a trusted local file. Compose `.env` syntax and shell syntax are not completely interchangeable.
+
+## Verify the fix rather than only the configuration
+
+1. Confirm that `DB_URL` is available to the **actual Java launch method**.
+2. Fully restart the Java process. An already running process does not inherit later shell changes.
+3. Classify any new error. Replacing an unresolved placeholder with a connection error is progress in diagnosis, not proof of a working database.
+4. Execute a simple read query against a test database before declaring success.
+5. Ensure the real `.env` file and raw environment variables were not committed or logged.
+
+If the environment variable resolves but the database network path fails, see [SSH tunneling to MySQL](/en/posts/ssh-mysql-tunnel/).
+
+The documented behavior is described by [Spring Boot externalized configuration](https://docs.spring.io/spring-boot/reference/features/external-config.html) and [Docker Compose container environment variables](https://docs.docker.com/compose/how-tos/environment-variables/set-environment-variables/).
 
 ## Final troubleshooting order
 

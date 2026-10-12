@@ -11,6 +11,7 @@ tags:
   - Virtual Machine
   - QEMU
 lang: en
+updatedDate: "2026-10-12"
 ---
 
 Synology Virtual Machine Manager (VMM) makes it possible to run Ubuntu Server directly on a NAS without a separate physical server.
@@ -244,6 +245,52 @@ Verify Ubuntu networking
 ↓
 Install QEMU Guest Agent
 ```
+
+## A post-installation storage issue from an operated VM
+
+The Ubuntu virtual server used for this blog's development projects **once reached 100% usage on its root filesystem during operation**. A `df -h /` check showed a filesystem of approximately 31 GB; after disk expansion work, it was approximately 124 GB.
+
+This is **not presented as the confirmed cause of an Ubuntu installation freeze**. It is a related operational problem that shows why disk capacity needs checking even after an installer appears to finish successfully.
+
+A virtual machine has at least three distinct capacity layers:
+
+| Layer | Where to check | Meaning |
+|---|---|---|
+| NAS physical storage | DSM Storage Manager | Capacity backing the virtual disks |
+| Virtual disk assigned to the VM | VMM VM settings | Block storage presented to the guest |
+| Ubuntu partition and filesystem | `lsblk`, `df -h /` | Storage currently usable by Ubuntu |
+
+```bash
+lsblk
+df -h /
+df -i /
+```
+
+Increasing a disk in VMM does **not necessarily resize the guest partition and filesystem automatically**. The safe procedure depends on whether the VM uses LVM, its partition layout and filesystem. Review backups and the actual layout before attempting partition changes.
+
+## Separate installer problems from post-install failures
+
+| Observation | First checks | What it suggests |
+|---|---|---|
+| No ISO boot menu | Attached image, boot order, console | Possibly a VM boot configuration issue |
+| Installer progress appears stuck | Resources, storage, console responsiveness | Change one variable at a time |
+| ISO installer reappears after reboot | Attached media and boot order | Check boot sequence before reinstalling |
+| Ubuntu installed but SSH is unavailable | `ip addr`, `ip route`, `ss -lntp` | Isolate network and SSH service |
+| Logging or storage fails after installation | `df -h /`, `df -i /`, `lsblk` | Look for guest filesystem pressure |
+
+After Ubuntu has booted, investigate current-boot errors with:
+
+```bash
+journalctl -b -p err --no-pager | tail -n 40
+```
+
+This command requires a booted Ubuntu guest; it is **not a direct diagnostic for a frozen installer ISO**. Redact hostname and network data before sharing command output publicly.
+
+## Define what a successful installation means
+
+The installer finishing is only one checkpoint. Boot **from the virtual disk with the ISO detached**, log in, check IP and DNS connectivity, confirm free filesystem space, and validate the services that the VM must run.
+
+Related operating notes: [GitHub Actions self-hosted runners](/en/posts/github-actions-self-hosted/) and [Remote MySQL over SSH](/en/posts/ssh-mysql-tunnel/).
 
 ## Conclusion
 

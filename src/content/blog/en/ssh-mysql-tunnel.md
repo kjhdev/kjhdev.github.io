@@ -10,6 +10,7 @@ tags:
   - Ubuntu
   - Security
 lang: en
+updatedDate: "2026-10-12"
 ---
 
 A remote MySQL server does not need to expose port 3306 to the public internet just because a developer needs database access.
@@ -19,19 +20,19 @@ SSH Local Port Forwarding can map a local port through an encrypted SSH connecti
 ```text
 Local computer
 127.0.0.1:13306
-      ↓
+  ↓
 SSH tunnel
-      ↓
+  ↓
 Remote server
 127.0.0.1:3306
-      ↓
+  ↓
 MySQL
 ```
 
 ## Basic command
 
 ```bash
-ssh     -N     -L 127.0.0.1:13306:127.0.0.1:3306     user@server.example.com
+ssh -N -L 127.0.0.1:13306:127.0.0.1:3306 user@server.example.com
 ```
 
 The `-L` format is:
@@ -75,7 +76,7 @@ Add:
 Example:
 
 ```bash
-ssh     -N     -L 127.0.0.1:13306:127.0.0.1:3306     -o ExitOnForwardFailure=yes     user@server.example.com
+ssh -N -L 127.0.0.1:13306:127.0.0.1:3306 -o ExitOnForwardFailure=yes user@server.example.com
 ```
 
 This makes SSH terminate if the requested forwarding cannot be established.
@@ -92,13 +93,13 @@ It does not guarantee that every later connection to the final MySQL destination
 Example:
 
 ```bash
-ssh     -N     -L 127.0.0.1:13306:127.0.0.1:3306     -o ExitOnForwardFailure=yes     -o ServerAliveInterval=60     -o ServerAliveCountMax=3     user@server.example.com
+ssh -N -L 127.0.0.1:13306:127.0.0.1:3306 -o ExitOnForwardFailure=yes -o ServerAliveInterval=60 -o ServerAliveCountMax=3 user@server.example.com
 ```
 
 ## Custom SSH port
 
 ```bash
-ssh     -p 2200     -N     -L 127.0.0.1:13306:127.0.0.1:3306     -o ExitOnForwardFailure=yes     user@server.example.com
+ssh -p 2200 -N -L 127.0.0.1:13306:127.0.0.1:3306 -o ExitOnForwardFailure=yes user@server.example.com
 ```
 
 Replace the port with the actual server configuration.
@@ -108,7 +109,7 @@ Replace the port with the actual server configuration.
 Use `-f`:
 
 ```bash
-ssh     -f     -N     -L 127.0.0.1:13306:127.0.0.1:3306     -o ExitOnForwardFailure=yes     user@server.example.com
+ssh -f -N -L 127.0.0.1:13306:127.0.0.1:3306 -o ExitOnForwardFailure=yes user@server.example.com
 ```
 
 For automation, check whether the local port is already in use before starting another tunnel.
@@ -128,7 +129,7 @@ nc -z 127.0.0.1 13306
 Test with the MySQL client:
 
 ```bash
-mysql     -h 127.0.0.1     -P 13306     -u app_user     -p
+mysql -h 127.0.0.1 -P 13306 -u app_user -p
 ```
 
 ## MySQL running in Docker
@@ -151,7 +152,7 @@ This keeps MySQL off the public network.
 ## Recommended command
 
 ```bash
-ssh     -N     -L 127.0.0.1:13306:127.0.0.1:3306     -o ExitOnForwardFailure=yes     -o ServerAliveInterval=60     -o ServerAliveCountMax=3     user@server.example.com
+ssh -N -L 127.0.0.1:13306:127.0.0.1:3306 -o ExitOnForwardFailure=yes -o ServerAliveInterval=60 -o ServerAliveCountMax=3 user@server.example.com
 ```
 
 The application connects to:
@@ -159,6 +160,45 @@ The application connects to:
 ```text
 127.0.0.1:13306
 ```
+
+## Isolate each part of the connection
+
+The following is a **reproducible example topology**, not a claim that these exact endpoints were used in a production deployment.
+
+| Layer | Example | What to verify |
+|---|---|---|
+| Developer machine | macOS, `127.0.0.1:13306` | The local port is free |
+| SSH endpoint | Ubuntu server, SSH port 22 | SSH authentication and firewall |
+| Database | `127.0.0.1:3306` on the server | MySQL listener or Docker port publishing |
+| Client | Spring Boot or MySQL CLI | Database credentials and grants |
+
+1. Verify that `ssh user@server.example.com` can log in **without forwarding**.
+2. On the server, inspect `ss -lntp | grep 3306` and, for Docker, check the published ports in `docker ps`.
+3. Start the SSH forwarding command on the developer machine. With `-N`, a running foreground process is expected.
+4. In **another terminal**, check the end-to-end database connection:
+
+```bash
+mysql -h 127.0.0.1 -P 13306 -u app_user -p -e "SELECT 1"
+```
+
+A passing `lsof` or `nc` check confirms a local listener. It does **not** prove that MySQL authentication works. Use a database client to verify the final hop.
+
+## Troubleshoot by symptom
+
+| Symptom | First place to investigate | Action |
+|---|---|---|
+| `Address already in use` | Developer machine | Check `lsof -nP -iTCP:13306 -sTCP:LISTEN` |
+| SSH `Permission denied` | SSH endpoint | Verify account, key, and authentication |
+| Tunnel opens, MySQL says `Connection refused` | Remote destination | Check the server's port 3306 listener and Docker mapping |
+| MySQL `Access denied` | Database | Inspect username, password, and database grants |
+| Repeated disconnects | Network or SSH | Review keepalive and server-side timeout settings |
+
+Port forwarding solves the **network path**. It does not replace MySQL permissions, SSH access control, or firewall rules.
+
+## Related troubleshooting notes
+
+- [Spring Boot DB_URL environment variable errors](/en/posts/spring-env-db-url/): when SSH works but the application does not
+- [Deploying Spring Boot with Docker](/en/posts/spring-boot-docker-deploy/): when host and container networking behave differently
 
 ## Conclusion
 

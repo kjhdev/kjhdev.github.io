@@ -11,6 +11,7 @@ tags:
   - VS Code
   - Docker
 lang: ko
+updatedDate: "2026-10-12"
 ---
 
 Spring Boot 프로젝트를 여러 개발환경에서 실행하다 보면 한 환경에서는 정상적으로 DB에 연결되는데 다른 환경에서는 다음과 같은 오류가 발생할 수 있습니다.
@@ -34,7 +35,7 @@ spring:
 그리고 프로젝트 루트에 `.env` 파일이 있습니다.
 
 ```env
-DB_URL=jdbc:mysql://db.example.com:3306/app?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+DB_URL="jdbc:mysql://db.example.com:3306/app?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
 DB_USERNAME=dev
 DB_PASSWORD=example-password
 ```
@@ -222,6 +223,50 @@ jdbc:mysql://db.example.com:3306/app
 - DB 사용자 권한
 - 데이터베이스 이름
 - SSL 옵션
+
+## 어디에서 값이 사라졌는지 재현하는 방법
+
+이 글의 JDBC 주소와 오류 문구는 **원인 설명을 위한 예시**입니다. DB 호스트명과 비밀번호를 실제 운영 로그에 그대로 노출하면 안 됩니다.
+
+| 실행 방식 | 환경변수 전달 경로 | 먼저 확인할 대상 |
+|---|---|---|
+| 터미널에서 Gradle/Maven 실행 | 현재 셸의 export 값 | `printenv DB_URL` |
+| VS Code Run/Debug | Java 실행 구성 | `launch.json`의 `envFile` 또는 `env` |
+| Docker Compose | 서비스의 `environment` / `env_file` | 컨테이너 내부 프로세스 환경 |
+| 배포된 JAR | 프로세스를 실행한 서비스 관리자 | systemd, 배포 스크립트의 환경 설정 |
+
+값이 **정의되지 않은 상황**과 **JDBC 접속 자체가 실패한 상황**은 해결 방법이 다릅니다.
+
+- 드라이버 오류에 문자 그대로 `DB_URL` placeholder가 나온다면 변수 전달부터 점검한다.
+- 실제 `jdbc:mysql:` 주소가 인식된 뒤 `Connection refused`가 나온다면 호스트·포트·MySQL 실행 여부를 확인한다.
+- `Access denied for user`라면 DB 계정·암호·접근 권한을 확인한다.
+
+### 민감정보를 출력하지 않고 확인하기
+
+`env | grep '^DB_'`는 변수에 비밀번호가 포함되어 있다면 화면과 터미널 기록에 남을 수 있습니다. 존재 여부만 확인하는 방식이 더 안전합니다.
+
+```bash
+test -n "$DB_URL" && echo "DB_URL_SET" || echo "DB_URL_MISSING"
+docker compose exec api sh -c 'test -n "$DB_URL" && echo DB_URL_SET || echo DB_URL_MISSING'
+```
+
+위 두 번째 명령은 `api` 컨테이너가 실행 중인 구성에서만 사용할 수 있습니다. **실제 비밀번호나 전체 JDBC URL을 스크린샷에 포함하지 않는 것**도 중요합니다.
+
+### .env를 source할 때 주의할 점
+
+JDBC URL에 `&`가 들어간다면 셸에서 명령 구분자로 해석되지 않도록 값을 따옴표로 감싸야 합니다. 또한 `source`는 파일을 **셸 명령으로 실행**하므로 신뢰할 수 있는 로컬 파일에만 사용합니다. Compose용 `.env`의 모든 문법이 셸의 `source`와 동일한 것도 아닙니다.
+
+## 수정 후 재검증 체크리스트
+
+1. 실행 방식별로 `DB_URL`이 **설정되어 있는지** 확인한다.
+2. 빌드 도구나 IDE에서 애플리케이션을 **완전히 재시작**한다. 이미 실행 중인 Java 프로세스는 나중에 바꾼 셸 값을 자동으로 받지 않는다.
+3. 오류가 변했다면 단계별로 분류한다. placeholder 오류가 사라지고 접속 오류가 나타나는 것은 원인 범위가 바뀌었다는 의미다.
+4. 테스트 DB에서 간단한 읽기 쿼리까지 성공한 뒤 해결된 것으로 판단한다.
+5. `.env`를 커밋하거나 전체 환경변수를 로그에 남기지 않았는지 확인한다.
+
+관련해서 [SSH 터널로 원격 MySQL에 접속하는 방법](/ko/posts/ssh-mysql-tunnel/)은 **환경변수는 정상인데 네트워크 연결이 실패하는 경우**에 도움이 됩니다.
+
+공식 동작 기준은 [Spring Boot Externalized Configuration](https://docs.spring.io/spring-boot/reference/features/external-config.html)과 [Docker Compose 환경변수 설정](https://docs.docker.com/compose/how-tos/environment-variables/set-environment-variables/)을 참고합니다.
 
 ## 최종 점검 순서
 

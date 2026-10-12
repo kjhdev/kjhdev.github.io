@@ -5,6 +5,7 @@ description: "A practical checklist for adding macOS support to an existing Flut
 category: "Flutter"
 tags: ["Flutter", "macOS", "Release", "Desktop", "Build"]
 lang: "en"
+updatedDate: "2026-10-12"
 ---
 
 When a Flutter desktop app that was originally developed for Windows needs to support macOS as well, simply running `flutter build macos --release` may not be enough.
@@ -208,6 +209,53 @@ chmod +x build_macos.sh
 ```
 
 A production build script can also copy platform-specific executables, verify versions, and create a ZIP package.
+
+## When the build passes but networking fails only in Release
+
+A Flutter desktop project has two separate milestones: **building the app** and **running its features correctly**. On macOS, App Sandbox entitlements can make features work in Debug and fail in Release.
+
+Check the entitlement files used by the Xcode project, typically under `macos/Runner/*.entitlements`. Inspect the actual filenames and settings in your repository rather than assuming Debug and Release use identical capabilities.
+
+| Feature | Relevant capability | What to test |
+|---|---|---|
+| Outbound HTTPS requests | `com.apple.security.network.client` | Network calls from the Release app |
+| Listening for inbound connections | `com.apple.security.network.server` | Whether Release permits the local server |
+| Opening/saving user-selected files | File-access entitlements | File picker, read and write operations |
+| Launching a bundled helper | Sandbox rules, signing and execute permission | Whether the child process starts |
+
+Do not add entitlements blindly. Grant **only the capabilities the app requires** and verify behavior in the configuration that you actually ship.
+
+## Identify the failing stage
+
+| Stage | Symptom | First check |
+|---|---|---|
+| Platform preparation | `macos/` missing | Platform folder and `flutter doctor -v` |
+| Compilation | Plugin, Swift, Pod or framework errors | macOS support, Xcode settings, first meaningful error |
+| App startup | `.app` exists but closes immediately | App logs, Console and native dependencies |
+| Feature execution | Works on Windows, fails on Mac | Paths, permissions and helper binary format |
+| Distribution | Works locally but is blocked elsewhere | Signing, notarization and Gatekeeper |
+
+Repeatedly running `flutter clean` is not a substitute for locating the **first actionable build error**. Redact local paths and signing data before publishing logs.
+
+## Reproducible Release verification
+
+```bash
+flutter doctor -v
+flutter pub get
+flutter build macos --release
+find build/macos/Build/Products/Release -maxdepth 1 -name "*.app"
+```
+
+The resulting app name depends on the project. Launch the `.app` and verify:
+
+1. The main screen opens.
+2. Required HTTPS requests succeed.
+3. File open/save and bundled helper programs work.
+4. Behavior is unchanged after closing and reopening the app.
+
+These are **proposed verification steps**, not a claim that a particular application passed a measured build test. Before external distribution, follow the [official Flutter macOS guidance](https://docs.flutter.dev/platform-integration/macos/building) for signing and notarization.
+
+Related notes: [Building Flutter for Windows](/en/posts/flutter-windows-desktop-build/) · [Separating environments with dart-define](/en/posts/flutter-dart-define/)
 
 ## Summary
 

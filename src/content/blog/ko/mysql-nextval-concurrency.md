@@ -1,7 +1,7 @@
 ---
 title: "MySQL nextval 동시성 문제: Duplicate entry 원인과 안전한 ID 생성"
 pubDate: 2026-09-17T11:31:48+09:00
-updatedDate: "2026-10-11"
+updatedDate: "2026-10-12"
 description: "동시 요청에서 직접 구현한 MySQL nextval이 같은 ID를 반환해 Duplicate entry가 발생하는 과정을 재현하고 AUTO_INCREMENT, SELECT FOR UPDATE, LAST_INSERT_ID(expr) 대안을 비교합니다."
 category: MySQL
 tags: ["MySQL", "Concurrency", "nextval", "AUTO_INCREMENT", "InnoDB"]
@@ -211,6 +211,67 @@ DuplicateKeyException
 
 부하가 커질수록 같은 경쟁 조건을 반복해서 만날 수 있습니다. 재시도는 일시적 충돌에 대한 방어책으로 둘 수 있지만, 먼저 ID 생성 자체를 원자적으로 만들어야 합니다.
 
+## 두 연결에서 경쟁 조건을 확인하는 테스트
+
+아래는 **테스트용으로 재현할 수 있는 시나리오**다. 운영 DB에서 시퀀스 테이블을 새로 만들거나 값을 초기화하지 않는다.
+
+잠금이 없는 기존 방식에서는 세션 A와 B가 각각 `SELECT current_value`를 실행한 뒤 애플리케이션에서 `+1`을 계산할 수 있다. 둘 다 같은 번호를 돌려줄 수 있는 구조인지 확인한다. 테스트 데이터는 독립된 DB에서 사용한다.
+
+원자적 UPDATE 방식으로 변경했다면 한 연결에서 다음 순서로 호출한다.
+
+```sql
+UPDATE sequence_value
+SET current_value = LAST_INSERT_ID(current_value + 1)
+WHERE sequence_name = 'ORDER';
+
+SELECT ROW_COUNT() AS affected_rows;
+SELECT LAST_INSERT_ID() AS allocated_id;
+```
+
+`affected_rows`가 **1인지** 확인한다. 0이면 시퀀스 행이 없거나 예상과 다른 조건으로 갱신되지 않았을 수 있다. `SELECT LAST_INSERT_ID()`는 UPDATE와 **동일한 MySQL 연결**에서 호출해야 한다.
+
+여러 애플리케이션 요청이 동시에 실행될 때 반환값을 모두 수집한 뒤 `COUNT(DISTINCT id)`가 성공 요청 수와 같은지 확인한다. 여기서 설명하는 SQL과 기대값은 재현 방법이며, 특정 운영 환경에서 실측한 부하 테스트 결과는 아니다.
+
+## SELECT FOR UPDATE를 선택했다면 반환값도 명확히 정의한다
+
+잠금 방식은 `SELECT ... FOR UPDATE`로 행을 잠근 후 업데이트하는 것에서 끝나지 않는다. 트랜잭션 내에서 **어떤 값을 새 ID로 반환할 것인지**도 코드에 명시해야 한다.
+
+```sql
+START TRANSACTION;
+SELECT current_value
+FROM sequence_value
+WHERE sequence_name = 'ORDER'
+FOR UPDATE;
+
+UPDATE sequence_value
+SET current_value = current_value + 1
+WHERE sequence_name = 'ORDER';
+
+SELECT current_value AS allocated_id
+FROM sequence_value
+WHERE sequence_name = 'ORDER';
+COMMIT;
+```
+
+이 SQL들은 하나의 연결과 트랜잭션에서 실행해야 한다. `FOR UPDATE`는 적절한 인덱스로 대상 행을 특정하는 것이 좋다. 잠금 범위와 대기 시간이 늘어날 수 있으므로 짧게 처리한다.
+
+## 실패·재시도까지 포함한 검증 기준
+
+| 테스트 | 확인할 결과 |
+|---|---|
+| 단일 요청 | 번호가 증가하고 새 번호가 반환됨 |
+| 동시에 2개 이상 요청 | 성공한 요청의 번호가 모두 다름 |
+| 존재하지 않는 시퀀스 이름 | 0행 갱신을 오류로 처리 |
+| 업무 INSERT 실패 | 트랜잭션 롤백·번호 재사용 정책 확인 |
+| 커넥션 풀 사용 | UPDATE와 LAST_INSERT_ID 조회가 같은 연결에서 실행됨 |
+| 반복 실행 | 중복 없이 추가 발급되고 초기화가 발생하지 않음 |
+
+트랜잭션을 롤백했을 때 **시퀀스 행의 갱신도 롤백될 수 있지만**, 같은 연결의 `LAST_INSERT_ID()` 상태가 자동으로 이전 상태로 되돌아가는 것은 아니다. 따라서 반환된 값을 트랜잭션 밖에서 확정 번호처럼 미리 배포하는 설계에는 별도 검토가 필요하다. 업무 번호가 연속이어야 하는지도 고유성 요구사항과 별도로 정의한다.
+
+[대량 데이터 수집 검증 설계](/ko/posts/batch-data-validation/)에서 다룬 것처럼, 단순 건수뿐 아니라 중복·누락·재실행 안전성을 별도로 확인해야 한다.
+
+공식 참고 문서: [MySQL 8.4의 LAST_INSERT_ID()](https://dev.mysql.com/doc/refman/8.4/en/information-functions.html) · [InnoDB 잠금](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking.html)
+
 ## 선택 기준
 
 | 상황 | 우선 선택 |
@@ -224,8 +285,8 @@ DuplicateKeyException
 ## 참고 자료
 
 - MySQL InnoDB AUTO_INCREMENT Handling  
-  https://dev.mysql.com/doc/refman/9.7/en/innodb-auto-increment-handling.html
+  https://dev.mysql.com/doc/refman/8.4/en/innodb-auto-increment-handling.html
 - MySQL InnoDB Locking  
-  https://dev.mysql.com/doc/refman/9.7/en/innodb-locking.html
+  https://dev.mysql.com/doc/refman/8.4/en/innodb-locking.html
 - MySQL Information Functions  
-  https://dev.mysql.com/doc/refman/9.7/en/information-functions.html
+  https://dev.mysql.com/doc/refman/8.4/en/information-functions.html

@@ -1,7 +1,7 @@
 ---
 title: "MySQL nextval Concurrency: Fixing Duplicate IDs Under Load"
 pubDate: 2026-09-17T11:31:48+09:00
-updatedDate: "2026-10-11"
+updatedDate: "2026-10-12"
 description: "Reproduce duplicate IDs caused by a SELECT-then-UPDATE MySQL nextval implementation and compare AUTO_INCREMENT, SELECT FOR UPDATE, and LAST_INSERT_ID(expr) fixes."
 category: MySQL
 tags: ["MySQL", "Concurrency", "nextval", "AUTO_INCREMENT", "InnoDB"]
@@ -211,6 +211,67 @@ retry
 
 Under load, the same race can keep producing collisions. Retries can be a defensive measure, but the first fix should make ID allocation atomic.
 
+## Reproduce the allocation race with two connections
+
+This section describes a **test scenario**, not a production incident log. Create and reset test sequence data only in an isolated test database.
+
+In the unsafe pattern, sessions A and B can each run `SELECT current_value` before the application adds one. If both return the same proposed ID, the race exists even before either application attempts its business INSERT.
+
+With an atomic UPDATE, execute the following statements on **one database connection**:
+
+```sql
+UPDATE sequence_value
+SET current_value = LAST_INSERT_ID(current_value + 1)
+WHERE sequence_name = 'ORDER';
+
+SELECT ROW_COUNT() AS affected_rows;
+SELECT LAST_INSERT_ID() AS allocated_id;
+```
+
+Confirm that `affected_rows` is **1**. A result of 0 means the expected row was not modified, or the selection condition needs investigation. `LAST_INSERT_ID()` holds connection-specific state, so reading it through a different pooled connection is not a valid test.
+
+To test concurrency, launch overlapping application requests, capture every allocated ID and compare the number of distinct IDs with the number of successful allocations. The examples here define **expected checks**, not fabricated load-test measurements.
+
+## Return the allocated value when using SELECT FOR UPDATE
+
+Locking the row is only part of the operation. The application must also define **which updated value it returns**.
+
+```sql
+START TRANSACTION;
+SELECT current_value
+FROM sequence_value
+WHERE sequence_name = 'ORDER'
+FOR UPDATE;
+
+UPDATE sequence_value
+SET current_value = current_value + 1
+WHERE sequence_name = 'ORDER';
+
+SELECT current_value AS allocated_id
+FROM sequence_value
+WHERE sequence_name = 'ORDER';
+COMMIT;
+```
+
+Keep these statements on the same transaction and connection. Target the sequence row with an appropriate index and keep the transaction short to avoid unnecessary contention.
+
+## Include failure paths in the verification plan
+
+| Test | Expected result |
+|---|---|
+| One allocation | Increment and return a new ID |
+| Multiple concurrent allocations | Every successful request receives a distinct ID |
+| Missing sequence name | Treat zero affected rows as an error |
+| Business INSERT fails | Apply a defined rollback and ID reuse policy |
+| Connection pool enabled | UPDATE and LAST_INSERT_ID use one connection |
+| Repeated runs | No duplicate allocations and no accidental reset |
+
+A rollback may undo the **sequence-table UPDATE**, but the connection's `LAST_INSERT_ID()` state is not automatically restored to its earlier value. Avoid treating a value observed before the transaction commits as a final, externally published business identifier without carefully designing the transaction policy. Contiguous business numbering is a separate requirement from uniqueness.
+
+The same principle of checking duplicates, missing records and safe retries appears in [batch data validation](/en/posts/batch-data-validation/).
+
+Official references: [MySQL 8.4 LAST_INSERT_ID()](https://dev.mysql.com/doc/refman/8.4/en/information-functions.html) and [InnoDB locks](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking.html).
+
 ## Choosing an approach
 
 | Situation | Preferred approach |
@@ -224,8 +285,8 @@ A custom `nextval` working in a sequential test says little about concurrency sa
 ## References
 
 - MySQL InnoDB AUTO_INCREMENT Handling  
-  https://dev.mysql.com/doc/refman/9.7/en/innodb-auto-increment-handling.html
+  https://dev.mysql.com/doc/refman/8.4/en/innodb-auto-increment-handling.html
 - MySQL InnoDB Locking  
-  https://dev.mysql.com/doc/refman/9.7/en/innodb-locking.html
+  https://dev.mysql.com/doc/refman/8.4/en/innodb-locking.html
 - MySQL Information Functions  
-  https://dev.mysql.com/doc/refman/9.7/en/information-functions.html
+  https://dev.mysql.com/doc/refman/8.4/en/information-functions.html
