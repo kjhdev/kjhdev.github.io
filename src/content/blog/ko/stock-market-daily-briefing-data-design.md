@@ -33,6 +33,10 @@ seriesOrder: 2
 
 이 다섯 질문을 기준으로 수집 범위를 나누니 필요한 데이터가 훨씬 명확해졌다.
 
+<!-- media:image:8 -->
+![주식시장 데일리 브리핑 시스템 만들기 #2: 어떤 데이터를 수집할 것인가](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-data-design/chatgpt-2026-10-12-11_07_22-2-1791771052445-4b9da7.webp)
+<!-- /media:image:8 -->
+
 ```text
 시장 방향        → KOSPI / KOSDAQ 지수
 시장 확산 정도   → 상승 / 보합 / 하락 종목 수
@@ -285,3 +289,4 @@ Astro 빌드 및 배포
 그래서 전체 수집 전에 소량의 API 호출로 거래일과 핵심 데이터를 먼저 검사하는 `preflight` 단계를 만들었다.
 
 다음 글에서는 **「전체 수집 전에 왜 preflight 검증을 두었는가」**를 주제로, 데이터 수집 전에 어떤 값을 확인하고 잘못된 데이터를 어떻게 차단하는지 정리할 예정이다.
+
