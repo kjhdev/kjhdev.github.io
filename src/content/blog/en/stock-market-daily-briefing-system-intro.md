@@ -47,9 +47,6 @@ The current high-level flow is:
 ![Building a Stock Market Daily Briefing System #1: Why I Started and the Overall Architecture](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-system-intro/01-system-overview-en-1791774134028-6f5304.webp)
 <!-- /media:image:10 -->
 
-<!-- media:image:7 -->
-![주식시장 데일리 브리핑 시스템 만들기 #1: 시작한 이유와 전체 구조](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-system-intro/chatgpt-2026-10-12-11_07_21-1-1791771010475-7865f3.webp)
-<!-- /media:image:7 -->
 
 ```text
 Stock-market data
