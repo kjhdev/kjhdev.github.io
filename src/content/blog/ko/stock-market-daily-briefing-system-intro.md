@@ -44,7 +44,7 @@ seriesOrder: 1
 현재 생각하고 있는 전체 흐름은 다음과 같다.
 
 <!-- media:image:7 -->
-![주식시장 데일리 브리핑 시스템 만들기 #1: 시작한 이유와 전체 구조](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-system-intro/chatgpt-2026-10-12-11_07_21-1-1791771010475-7865f3.webp)
+![주식시장 데일리 브리핑 시스템 만들기 #1: 시작한 이유와 전체 구조](https://media.buildnday.com/images/kjhdev/stock-market-daily-briefing-system-intro/chatgpt-2026-10-12-11_07_21-1-1791771010475-7865f3.webp)
 <!-- /media:image:7 -->
 
 ```text

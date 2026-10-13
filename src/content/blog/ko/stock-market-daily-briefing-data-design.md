@@ -34,7 +34,7 @@ seriesOrder: 2
 이 다섯 질문을 기준으로 수집 범위를 나누니 필요한 데이터가 훨씬 명확해졌다.
 
 <!-- media:image:8 -->
-![주식시장 데일리 브리핑 시스템 만들기 #2: 어떤 데이터를 수집할 것인가](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-data-design/chatgpt-2026-10-12-11_07_22-2-1791771052445-4b9da7.webp)
+![주식시장 데일리 브리핑 시스템 만들기 #2: 어떤 데이터를 수집할 것인가](https://media.buildnday.com/images/kjhdev/stock-market-daily-briefing-data-design/chatgpt-2026-10-12-11_07_22-2-1791771052445-4b9da7.webp)
 <!-- /media:image:8 -->
 
 ```text

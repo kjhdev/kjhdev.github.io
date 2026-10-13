@@ -34,7 +34,7 @@ When reviewing a completed trading day, I mainly want to know five things.
 Once these questions were fixed, the required datasets became much clearer.
 
 <!-- media:image:11 -->
-![Building a Stock Market Daily Briefing System #2: Choosing What Data to Collect](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-data-design/02-data-collection-en-1791774169444-3ec9e8.webp)
+![Building a Stock Market Daily Briefing System #2: Choosing What Data to Collect](https://media.buildnday.com/images/kjhdev/stock-market-daily-briefing-data-design/02-data-collection-en-1791774169444-3ec9e8.webp)
 <!-- /media:image:11 -->
 
 

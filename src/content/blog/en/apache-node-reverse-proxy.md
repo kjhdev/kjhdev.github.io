@@ -49,7 +49,7 @@ https://example.com/api/status   → Node.js API
 ## Basic Apache configuration
 
 <!-- media:image:3 -->
-![Apache 리버스 프록시로 Node.js API 연결하기: 404 원인과 해결 방법](https://media.bubudev.com/images/kjhdev/apache-node-reverse-proxy/apache-node-reverse-proxy-1790932468128-2c14e3.webp)
+![Apache 리버스 프록시로 Node.js API 연결하기: 404 원인과 해결 방법](https://media.buildnday.com/images/kjhdev/apache-node-reverse-proxy/apache-node-reverse-proxy-1790932468128-2c14e3.webp)
 <!-- /media:image:3 -->
 
 The simplest setup usually uses `ProxyPass` and `ProxyPassReverse` together.

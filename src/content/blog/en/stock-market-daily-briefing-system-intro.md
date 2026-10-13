@@ -44,7 +44,7 @@ Instead of repeatedly checking multiple sites, copying numbers, and composing th
 The current high-level flow is:
 
 <!-- media:image:10 -->
-![Building a Stock Market Daily Briefing System #1: Why I Started and the Overall Architecture](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-system-intro/01-system-overview-en-1791774134028-6f5304.webp)
+![Building a Stock Market Daily Briefing System #1: Why I Started and the Overall Architecture](https://media.buildnday.com/images/kjhdev/stock-market-daily-briefing-system-intro/01-system-overview-en-1791774134028-6f5304.webp)
 <!-- /media:image:10 -->
 
 

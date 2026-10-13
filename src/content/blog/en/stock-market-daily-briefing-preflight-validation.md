@@ -32,7 +32,7 @@ Its job is to answer a simpler question: **is the basic collection environment h
 The current flow can be simplified as follows.
 
 <!-- media:image:12 -->
-![Building a Stock Market Daily Briefing System #3: Why I Added Preflight Validation Before Full Collection](https://media.bubudev.com/images/kjhdev/stock-market-daily-briefing-preflight-validation/03-preflight-validation-en-1791774200462-e0fe64.webp)
+![Building a Stock Market Daily Briefing System #3: Why I Added Preflight Validation Before Full Collection](https://media.buildnday.com/images/kjhdev/stock-market-daily-briefing-preflight-validation/03-preflight-validation-en-1791774200462-e0fe64.webp)
 <!-- /media:image:12 -->
 
 
